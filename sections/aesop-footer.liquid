@@ -1,0 +1,663 @@
+{% liquid
+  assign section_id = 'aesop-footer-' | append: section.id
+%}
+<style>
+  #{{ section_id }} {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 35px 4% 25px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  #{{ section_id }} * {
+    box-sizing: border-box;
+  }
+
+  #{{ section_id }} a {
+    color: var(--footer-text);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  #{{ section_id }} a:hover {
+    opacity: 0.8;
+  }
+
+  #{{ section_id }} .aesop-footer__badges {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--footer-border);
+    margin-bottom: 35px;
+    flex-wrap: wrap;
+  }
+
+  #{{ section_id }} .aesop-footer__badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+  }
+
+  #{{ section_id }} .aesop-footer__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr 1.5fr;
+    gap: 35px;
+    margin-bottom: 40px;
+  }
+
+  #{{ section_id }} .aesop-footer__heading {
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 14px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--footer-border);
+    letter-spacing: 0.2px;
+  }
+
+  #{{ section_id }} .aesop-footer__links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #{{ section_id }} .aesop-footer__links li {
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  #{{ section_id }} .aesop-footer__links li a {
+    color: #E5E5E5;
+    font-weight: 400;
+  }
+
+  #{{ section_id }} .aesop-footer__text {
+    font-size: 13.5px;
+    color: #E5E5E5;
+  }
+
+  #{{ section_id }} .aesop-footer__text-block {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #E5E5E5;
+  }
+
+  #{{ section_id }} .aesop-footer__text-block a {
+    text-decoration: underline;
+    color: #FFFFFF;
+  }
+
+  #{{ section_id }} .aesop-footer__input-wrap {
+    margin-bottom: 14px;
+  }
+
+  /* Solid white input box like image */
+  #{{ section_id }} .aesop-footer__input {
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: #FFFFFF;
+    color: #111111;
+    font-size: 13.5px;
+    outline: none;
+    border-radius: 0;
+  }
+
+  #{{ section_id }} .aesop-footer__input::placeholder {
+    color: #757575;
+    opacity: 1;
+  }
+
+  #{{ section_id }} .aesop-footer__checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    margin-bottom: 18px;
+    cursor: pointer;
+    color: #E5E5E5;
+  }
+
+  #{{ section_id }} .aesop-footer__checkbox-label input {
+    margin-top: 2px;
+    accent-color: #FFFFFF;
+  }
+
+  /* Submit Button dark gray */
+  #{{ section_id }} .aesop-footer__submit {
+    background-color: #383838;
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 26px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  #{{ section_id }} .aesop-footer__submit:hover {
+    opacity: 0.85;
+  }
+
+  #{{ section_id }} .aesop-footer__message {
+    color: #4CAF50;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  /* Plain Social Icons matching screenshot */
+  #{{ section_id }} .aesop-footer__social-icons {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+    align-items: center;
+  }
+
+  #{{ section_id }} .aesop-footer__social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    border: none;
+    width: auto;
+    height: auto;
+  }
+
+  #{{ section_id }} .aesop-footer__social-icons a:hover {
+    opacity: 0.7;
+  }
+
+  #{{ section_id }} .aesop-footer__bottom {
+    padding-top: 20px;
+    margin-bottom: 15px;
+  }
+
+  #{{ section_id }} .aesop-footer__payments {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  #{{ section_id }} .aesop-footer__payment-icon {
+    height: 22px;
+    width: auto;
+  }
+
+  #{{ section_id }} .aesop-footer__legal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: #CCCCCC;
+    padding-top: 15px;
+    border-top: 1px solid var(--footer-border);
+  }
+
+  #{{ section_id }} .aesop-footer__copyright {
+    margin: 0;
+    color: #CCCCCC;
+  }
+
+  #{{ section_id }} .aesop-footer__legal-links {
+    list-style: none;
+    display: flex;
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    color: #CCCCCC;
+  }
+
+  #{{ section_id }} .aesop-footer__legal-links li {
+    margin: 0;
+  }
+
+  #{{ section_id }} .aesop-footer__legal-links a {
+    color: #CCCCCC;
+  }
+
+  @media (max-width: 1024px) {
+    #{{ section_id }} .aesop-footer__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+  }
+
+  @media (max-width: 749px) {
+    #{{ section_id }} {
+      padding: 30px 20px 20px;
+    }
+
+    #{{ section_id }} .aesop-footer__badges {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+    }
+
+    #{{ section_id }} .aesop-footer__grid {
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    #{{ section_id }} .aesop-footer__legal {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    #{{ section_id }} .aesop-footer__legal-links {
+      gap: 8px;
+    }
+  }
+</style>
+<footer id="{{ section_id }}" class="aesop-footer" style="--footer-bg: {{ section.settings.bg_color }}; --footer-text: {{ section.settings.text_color }}; --footer-border: {{ section.settings.border_color }};">
+  
+  <div class="aesop-footer__badges">
+    <div class="aesop-footer__badge">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      <span>{{ section.settings.badge_1 }}</span>
+    </div>
+    <div class="aesop-footer__badge">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+      <span>{{ section.settings.badge_2 }}</span>
+    </div>
+    <div class="aesop-footer__badge">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2.69l5.66 4.12a8 8 0 1 1-11.32 0L12 2.69z"></path><path d="M12 18.31l-3.54-2.57a5 5 0 1 1 7.08 0L12 18.31z"></path></svg>
+      <span>{{ section.settings.badge_3 }}</span>
+    </div>
+  </div>
+
+  <div class="aesop-footer__grid">
+    
+    <div class="aesop-footer__col">
+      <h3 class="aesop-footer__heading">{{ section.settings.heading_social }}</h3>
+      <ul class="aesop-footer__links">
+        {% for block in section.blocks %}
+          {% if block.type == 'social_link' %}
+            <li><a href="{{ block.settings.link }}" {{ block.shopify_attributes }}>{{ block.settings.title }}</a></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+      <h3 class="aesop-footer__heading" style="margin-top: 32px;">{{ section.settings.heading_location }}</h3>
+      <ul class="aesop-footer__links">
+        <li><span class="aesop-footer__text">{{ section.settings.location_text }}</span></li>
+      </ul>
+    </div>
+
+    <div class="aesop-footer__col">
+      <h3 class="aesop-footer__heading">{{ section.settings.heading_about }}</h3>
+      <ul class="aesop-footer__links">
+        {% for block in section.blocks %}
+          {% if block.type == 'menu_link' %}
+            <li><a href="{{ block.settings.link }}" {{ block.shopify_attributes }}>{{ block.settings.title }}</a></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="aesop-footer__col">
+      <h3 class="aesop-footer__heading">{{ section.settings.heading_sustainability }}</h3>
+      <div class="aesop-footer__text-block">
+        {{ section.settings.sustainability_text }}
+      </div>
+    </div>
+
+    <div class="aesop-footer__col aesop-footer__col--newsletter">
+      <h3 class="aesop-footer__heading">{{ section.settings.heading_newsletter }}</h3>
+      
+      {%- form 'customer', class: 'aesop-footer__form' -%}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        
+        {% if form.posted_successfully? %}
+          <p class="aesop-footer__message">Thank you for subscribing.</p>
+        {% endif %}
+        
+        <div class="aesop-footer__input-wrap">
+          <input type="email" name="contact[email]" class="aesop-footer__input" placeholder="{{ section.settings.newsletter_placeholder }}" required>
+        </div>
+        
+        <label class="aesop-footer__checkbox-label">
+          <input type="checkbox" required>
+          <span>{{ section.settings.newsletter_consent }}</span>
+        </label>
+
+        <button type="submit" class="aesop-footer__submit">{{ section.settings.newsletter_button }}</button>
+      {%- endform -%}
+
+      <div class="aesop-footer__social-icons">
+        {% if section.settings.social_instagram != blank %}
+          <a href="{{ section.settings.social_instagram }}" target="_blank" aria-label="Instagram">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+          </a>
+        {% endif %}
+        {% if section.settings.social_linkedin != blank %}
+          <a href="{{ section.settings.social_linkedin }}" target="_blank" aria-label="LinkedIn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+        {% endif %}
+        {% if section.settings.social_twitter != blank %}
+          <a href="{{ section.settings.social_twitter }}" target="_blank" aria-label="Twitter / X">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4l11.733 16h4.267l-11.733 -16z"></path><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path></svg>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="aesop-footer__bottom">
+    <div class="aesop-footer__payments">
+      {% if section.settings.show_payment_icons %}
+        {% for type in shop.enabled_payment_types %}
+          {{ type | payment_type_svg_tag: class: 'aesop-footer__payment-icon' }}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="aesop-footer__legal">
+    <p class="aesop-footer__copyright">{{ section.settings.copyright_text }}</p>
+    <ul class="aesop-footer__legal-links">
+      <li><a href="{{ section.settings.link_refund }}">{{ section.settings.label_refund }}</a></li>
+      <li>·</li>
+      <li><a href="{{ section.settings.link_terms }}">{{ section.settings.label_terms }}</a></li>
+      <li>·</li>
+      <li><a href="{{ section.settings.link_privacy }}">{{ section.settings.label_privacy }}</a></li>
+      <li>·</li>
+      <li><a href="{{ section.settings.link_shipping }}">{{ section.settings.label_shipping }}</a></li>
+      <li>·</li>
+      <li><a href="{{ section.settings.link_contact }}">{{ section.settings.label_contact }}</a></li>
+    </ul>
+  </div>
+
+</footer>
+{% schema %}
+{
+  "name": "Aesop Footer",
+  "tag": "section",
+  "class": "section-aesop-footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Trust Badges"
+    },
+    {
+      "type": "text",
+      "id": "badge_1",
+      "label": "Badge 1 Text",
+      "default": "Complimentary shipping"
+    },
+    {
+      "type": "text",
+      "id": "badge_2",
+      "label": "Badge 2 Text",
+      "default": "Secure checkout"
+    },
+    {
+      "type": "text",
+      "id": "badge_3",
+      "label": "Badge 3 Text",
+      "default": "Complimentary samples"
+    },
+    {
+      "type": "header",
+      "content": "Column 1: Social & Location"
+    },
+    {
+      "type": "text",
+      "id": "heading_social",
+      "label": "Social Heading",
+      "default": "Social links"
+    },
+    {
+      "type": "text",
+      "id": "heading_location",
+      "label": "Location Heading",
+      "default": "Location Preferences"
+    },
+    {
+      "type": "text",
+      "id": "location_text",
+      "label": "Location Text",
+      "default": "Shipping : UAE"
+    },
+    {
+      "type": "header",
+      "content": "Column 2: About Links"
+    },
+    {
+      "type": "text",
+      "id": "heading_about",
+      "label": "About Heading",
+      "default": "About"
+    },
+    {
+      "type": "header",
+      "content": "Column 3: Sustainability"
+    },
+    {
+      "type": "text",
+      "id": "heading_sustainability",
+      "label": "Sustainability Heading",
+      "default": "Sustainability"
+    },
+    {
+      "type": "richtext",
+      "id": "sustainability_text",
+      "label": "Sustainability Text",
+      "default": "<p>All Aesop products are vegan, and we do not test our formulations or ingredients on animals. We are Leaping Bunny approved and a Certified B Corporation. <a href='#'>Learn More</a></p>"
+    },
+    {
+      "type": "header",
+      "content": "Column 4: Newsletter"
+    },
+    {
+      "type": "text",
+      "id": "heading_newsletter",
+      "label": "Newsletter Heading",
+      "default": "Subscribe to Aesop communications"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_placeholder",
+      "label": "Email Placeholder",
+      "default": "Email address*"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_consent",
+      "label": "Consent Text",
+      "default": "I consent to receive occasional marketing communications and event invitations from Mizzen General Trading, its affiliates, and group companies via phone, email, SMS, or WhatsApp channels"
+    },
+    {
+      "type": "text",
+      "id": "newsletter_button",
+      "label": "Button Text",
+      "default": "Submit"
+    },
+    {
+      "type": "header",
+      "content": "Social Media Links"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram Link"
+    },
+    {
+      "type": "url",
+      "id": "social_linkedin",
+      "label": "LinkedIn Link"
+    },
+    {
+      "type": "url",
+      "id": "social_twitter",
+      "label": "Twitter / X Link"
+    },
+    {
+      "type": "header",
+      "content": "Bottom Bar Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Show Payment Icons",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright Text",
+      "default": "© 2026, Aesop UAE"
+    },
+    {
+      "type": "header",
+      "content": "Legal Links"
+    },
+    {
+      "type": "text",
+      "id": "label_refund",
+      "label": "Refund Label",
+      "default": "Refund policy"
+    },
+    {
+      "type": "url",
+      "id": "link_refund",
+      "label": "Refund Link"
+    },
+    {
+      "type": "text",
+      "id": "label_terms",
+      "label": "Terms Label",
+      "default": "Terms of service"
+    },
+    {
+      "type": "url",
+      "id": "link_terms",
+      "label": "Terms Link"
+    },
+    {
+      "type": "text",
+      "id": "label_privacy",
+      "label": "Privacy Label",
+      "default": "Privacy policy"
+    },
+    {
+      "type": "url",
+      "id": "link_privacy",
+      "label": "Privacy Link"
+    },
+    {
+      "type": "text",
+      "id": "label_shipping",
+      "label": "Shipping Label",
+      "default": "Shipping policy"
+    },
+    {
+      "type": "url",
+      "id": "link_shipping",
+      "label": "Shipping Link"
+    },
+    {
+      "type": "text",
+      "id": "label_contact",
+      "label": "Contact Label",
+      "default": "Contact information"
+    },
+    {
+      "type": "url",
+      "id": "link_contact",
+      "label": "Contact Link"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#222222"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border Color",
+      "default": "#383838"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "social_link",
+      "name": "Social Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Link Label",
+          "default": "Instagram"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link URL"
+        }
+      ]
+    },
+    {
+      "type": "menu_link",
+      "name": "Menu Link",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Link Label",
+          "default": "Our Story"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Aesop Footer",
+      "blocks": [
+        { "type": "social_link", "settings": { "title": "Instagram" } },
+        { "type": "social_link", "settings": { "title": "LinkedIn" } },
+        { "type": "social_link", "settings": { "title": "Twitter" } },
+        { "type": "menu_link", "settings": { "title": "Our Story" } },
+        { "type": "menu_link", "settings": { "title": "Contact Us" } },
+        { "type": "menu_link", "settings": { "title": "FAQs" } },
+        { "type": "menu_link", "settings": { "title": "Delivery & Returns" } },
+        { "type": "menu_link", "settings": { "title": "Privacy Notice" } },
+        { "type": "menu_link", "settings": { "title": "Terms and Conditions" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

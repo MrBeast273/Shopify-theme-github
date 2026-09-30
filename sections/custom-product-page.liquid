@@ -1,0 +1,631 @@
+{%- liquid
+  assign s = section.settings
+  assign p = product
+  assign cur = p.selected_or_first_available_variant
+  assign fid = 'pf-' | append: section.id
+  assign col = collection | default: p.collections.first
+  assign mks = 'description,ingredients,packaging,whats_new' | split: ','
+  assign gw = s.gw | append: 'fr'
+  assign iw = 100 | minus: s.gw | append: 'fr'
+-%}
+<style>
+{{ s.f_h | font_face: font_display: 'swap' }}
+{{ s.f_b | font_face: font_display: 'swap' }}
+</style>
+<section id="pp-{{ section.id }}" class="pp" data-redirect="{{ s.redirect }}" style="--bg:{{ s.c_bg }};--tx:{{ s.c_tx }};--mu:{{ s.c_mu }};--bt:{{ s.c_bt }};--btx:{{ s.c_btx }};--bd:{{ s.c_bd }};--pn:{{ s.c_pn }};--dk:{{ s.c_dk }};--dkt:{{ s.c_dkt }};--ac:{{ s.c_ac }};--hf:{{ s.f_h.family }},{{ s.f_h.fallback_families }};--bf:{{ s.f_b.family }},{{ s.f_b.fallback_families }};--fs:{{ s.fs }}px;--hs:{{ s.h_size }}px;--ds:{{ s.hd_size }}px;--bs:{{ s.big_size }}px;--mw:{{ s.mw }}px;--gp:{{ s.gp }}px;--pt:{{ s.pt }}px;--pb:{{ s.pb }}px;--gw:{{ gw }};--iw:{{ iw }};--ar:{{ s.ar }};--fit:{{ s.fit }}">
+  <svg hidden width="0" height="0"><symbol id="pp-i" viewBox="0 0 16 16"><path d="M8 1.5 14 4.8v6.4L8 14.5 2 11.2V4.8zM2 4.8l6 3.3 6-3.3M8 8.1v6.4" fill="none" stroke="currentColor" stroke-width=".9"/></symbol></svg>
+  {%- if s.bc -%}
+  <nav class="pp-w pp-bc" aria-label="Breadcrumb">
+    <a href="{{ routes.root_url }}">Home</a>
+    {%- if col -%}<a href="{{ col.url }}">{{ col.title }}</a>{%- endif -%}
+    <span>{{ p.title }}</span>
+  </nav>
+  {%- endif -%}
+  <div class="pp-w pp-main">
+    <div class="pp-g">
+      {%- if s.badge != blank -%}<span class="pp-bg">{{ s.badge }}</span>{%- endif -%}
+      <div class="pp-st">
+        {%- for im in p.images -%}
+          {%- liquid
+            assign on = false
+            if cur.featured_image
+              if im.id == cur.featured_image.id
+                assign on = true
+              endif
+            elsif forloop.first
+              assign on = true
+            endif
+          -%}
+          {%- liquid
+            assign lz = 'lazy'
+            assign fp = 'auto'
+            assign cl = ''
+            if forloop.first
+              assign lz = 'eager'
+              assign fp = 'high'
+            endif
+            if on
+              assign cl = 'on'
+            endif
+          -%}
+          {{ im | image_url: width: 1400 | image_tag: loading: lz, fetchpriority: fp, widths: '500, 800, 1100, 1400', sizes: '(min-width:769px) 62vw, 100vw', alt: im.alt, data-m: im.id, class: cl }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag }}
+        {%- endfor -%}
+      </div>
+      {%- if s.thumbs and p.images.size > 1 -%}
+      <div class="pp-th" role="tablist">
+        {%- for im in p.images -%}
+          <button type="button" class="{% if cur.featured_image.id == im.id or forloop.first and cur.featured_image == blank %}on{% endif %}" data-th data-m="{{ im.id }}" aria-label="Image {{ forloop.index }}">
+            {{ im | image_url: width: 240 | image_tag: loading: 'lazy', widths: '120, 240', sizes: '96px', alt: '' }}
+          </button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+    </div>
+    <div class="pp-i{% if s.sticky %} pp-sk{% endif %}">
+      {%- for b in section.blocks -%}
+        {%- assign bs = b.settings -%}
+        {%- case b.type -%}
+          {%- when 'title' -%}
+            {%- assign tag = bs.tag | default: 'h1' -%}
+            <{{ tag }} class="pp-t" {{ b.shopify_attributes }}>{{ bs.custom | default: p.title }}</{{ tag }}>
+          {%- when 'price' -%}
+            <div {{ b.shopify_attributes }}>
+              <div class="pp-pr" data-price>
+                {%- if bs.label != blank -%}<span class="pp-sm">{{ bs.label }}</span>{%- endif -%}
+                <span data-p>{{ cur.price | money }}</span>
+                {%- if bs.compare -%}<s data-c{% unless cur.compare_at_price > cur.price %} hidden{% endunless %}>{{ cur.compare_at_price | money }}</s>{%- endif -%}
+              </div>
+              {%- if bs.tax != blank -%}<p class="pp-sm">{{ bs.tax }}</p>{%- endif -%}
+            </div>
+          {%- when 'text' -%}
+            <div class="pp-tx" {{ b.shopify_attributes }}>
+              {%- if bs.text != blank -%}{{ bs.text }}{%- elsif p.metafields.custom.short_description != blank -%}{{ p.metafields.custom.short_description | metafield_tag }}{%- else -%}<p>{{ p.description | strip_html | truncate: bs.len }}</p>{%- endif -%}
+            </div>
+          {%- when 'variants' -%}
+            {%- unless p.has_only_default_variant -%}
+            <div class="pp-o" {{ b.shopify_attributes }}>
+              {%- for op in p.options_with_values -%}
+                {%- assign oi = forloop.index0 -%}
+                <fieldset>
+                  {%- if bs.label -%}<legend class="pp-sm">{{ op.name }}</legend>{%- endif -%}
+                  {%- if bs.style == 'select' -%}
+                    <select name="o{{ oi }}" form="{{ fid }}" aria-label="{{ op.name }}">
+                      {%- for v in op.values -%}<option value="{{ v | escape }}"{% if op.selected_value == v %} selected{% endif %}>{{ v }}</option>{%- endfor -%}
+                    </select>
+                  {%- else -%}
+                    <div class="pp-ob">
+                      {%- for v in op.values -%}
+                        <label><input type="radio" name="o{{ oi }}" form="{{ fid }}" value="{{ v | escape }}"{% if op.selected_value == v %} checked{% endif %}><span>{{ v }}</span></label>
+                      {%- endfor -%}
+                    </div>
+                  {%- endif -%}
+                </fieldset>
+              {%- endfor -%}
+            </div>
+            {%- endunless -%}
+          {%- when 'quantity' -%}
+            <div class="pp-qt" {{ b.shopify_attributes }}>
+              <label class="pp-sm" for="q-{{ section.id }}">{{ bs.label }}</label>
+              <input id="q-{{ section.id }}" type="number" name="quantity" form="{{ fid }}" value="1" min="1" inputmode="numeric">
+            </div>
+          {%- when 'buy_buttons' -%}
+            <div {{ b.shopify_attributes }}>
+              {%- form 'product', p, id: fid, class: 'pp-f' -%}
+                <input type="hidden" name="id" value="{{ cur.id }}" data-id>
+                <button type="submit" class="pp-btn" data-add data-a="{{ bs.add }}" data-o="{{ bs.out }}" data-d="{{ bs.added }}" data-u="{{ bs.unavail }}"{% unless cur.available %} disabled{% endunless %}>{% if cur.available %}{{ bs.add }}{% else %}{{ bs.out }}{% endif %}</button>
+                {%- if bs.dynamic -%}{{ form | payment_button }}{%- endif -%}
+              {%- endform -%}
+            </div>
+          {%- when 'installments' -%}
+            <div class="pp-in" {{ b.shopify_attributes }}>
+              <span>{{ bs.label }}</span>
+              {%- if bs.n1 != blank -%}<b style="background:{{ bs.k1 }};color:{{ bs.t1 }}">{{ bs.n1 }}</b>{%- endif -%}
+              {%- if bs.n2 != blank -%}<b style="background:{{ bs.k2 }};color:{{ bs.t2 }}">{{ bs.n2 }}</b>{%- endif -%}
+            </div>
+          {%- when 'accordion' -%}
+            <details class="pp-ac" {{ b.shopify_attributes }}{% if bs.open %} open{% endif %}>
+              <summary>{{ bs.heading }}</summary>
+              <div class="pp-tx">
+                {%- assign mk = bs.mkey -%}
+                {%- if bs.content != blank -%}{{ bs.content }}{%- elsif mk != blank -%}{{ p.metafields.custom[mk] | metafield_tag }}{%- endif -%}
+              </div>
+            </details>
+          {%- when 'usp' -%}
+            <ul class="pp-us" {{ b.shopify_attributes }}>
+              {%- for i in (1..4) -%}
+                {%- assign uk = 'u' | append: i -%}
+                {%- if bs[uk] != blank -%}<li><svg width="18" height="18" aria-hidden="true"><use href="#pp-i"/></svg>{{ bs[uk] }}</li>{%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- when '@app' -%}
+            {% render b %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+  {%- if s.tabs -%}
+  <div class="pp-w pp-tb">
+    <div class="pp-tn" role="tablist">
+      {%- for i in (1..4) -%}
+        {%- assign tk = 't' | append: i -%}
+        {%- if s[tk] != blank -%}<button type="button" role="tab" class="{% if forloop.first %}on{% endif %}" data-tab="{{ i }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">{{ s[tk] }}</button>{%- endif -%}
+      {%- endfor -%}
+    </div>
+    {%- for i in (1..4) -%}
+      {%- assign tk = 't' | append: i -%}
+      {%- assign ck = 'c' | append: i -%}
+      {%- assign mk = mks[forloop.index0] -%}
+      {%- if s[tk] != blank -%}
+      <div class="pp-tp pp-tx" role="tabpanel" data-panel="{{ i }}"{% unless forloop.first %} hidden{% endunless %}>
+        {%- if s[ck] != blank -%}{{ s[ck] }}{%- elsif forloop.first -%}{{ p.description }}{%- else -%}{{ p.metafields.custom[mk] | metafield_tag }}{%- endif -%}
+      </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+  {%- endif -%}
+  {%- for b in section.blocks -%}
+    {%- assign bs = b.settings -%}
+    {%- case b.type -%}
+      {%- when 'how_to_use' -%}
+        <div class="pp-b pp-2" {{ b.shopify_attributes }}>
+          <div class="pp-m">
+            {%- if bs.video != blank -%}
+              {{ bs.video | video_tag: image_size: '1400x', autoplay: true, loop: true, muted: true, playsinline: true, controls: false, preload: 'none' }}
+              <button type="button" class="pp-pz" data-pause aria-label="Pause video"><svg viewBox="0 0 16 16" width="16" height="16"><path d="M4 2h3v12H4zM9 2h3v12H9z" fill="currentColor"/></svg></button>
+            {%- elsif bs.image != blank -%}
+              {{ bs.image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '600, 900, 1400', sizes: '(min-width:769px) 50vw, 100vw', alt: bs.image.alt }}
+            {%- endif -%}
+          </div>
+          <div class="pp-x">
+            {%- if bs.eyebrow != blank -%}<p class="pp-sm">{{ bs.eyebrow }}</p>{%- endif -%}
+            <div class="pp-lg">{{ bs.text }}</div>
+            {%- for i in (1..3) -%}
+              {%- assign lk = 'l' | append: i -%}
+              {%- assign vk = 'v' | append: i -%}
+              {%- if bs[lk] != blank -%}<dl><dt class="pp-sm">{{ bs[lk] }}</dt><dd>{{ bs[vk] }}</dd></dl>{%- endif -%}
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- when 'feature' -%}
+        <div class="pp-b pp-2{% if bs.side == 'left' %} rv{% endif %}" {{ b.shopify_attributes }}>
+          <div class="pp-x">
+            {%- if bs.eyebrow != blank -%}<p class="pp-sm">{{ bs.eyebrow }}</p>{%- endif -%}
+            {%- if bs.heading != blank -%}<h2 class="pp-h">{{ bs.heading }}</h2>{%- endif -%}
+            {%- for i in (1..2) -%}
+              {%- assign lk = 'l' | append: i -%}
+              {%- assign hk = 'h' | append: i -%}
+              {%- assign tk = 't' | append: i -%}
+              {%- if bs[lk] != blank -%}<dl><dt class="pp-sm">{{ bs[lk] }}</dt><dd><b>{{ bs[hk] }}</b><span>{{ bs[tk] }}</span></dd></dl>{%- endif -%}
+            {%- endfor -%}
+          </div>
+          <div class="pp-m">{%- if bs.image != blank -%}{{ bs.image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '600, 900, 1400', sizes: '(min-width:769px) 50vw, 100vw', alt: bs.image.alt }}{%- endif -%}</div>
+        </div>
+      {%- when 'poem' -%}
+        <div class="pp-b pp-2{% if bs.side == 'right' %} rv{% endif %}" {{ b.shopify_attributes }}>
+          <div class="pp-m tall">{%- if bs.image != blank -%}{{ bs.image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '600, 900, 1400', sizes: '(min-width:769px) 50vw, 100vw', alt: bs.image.alt }}{%- endif -%}</div>
+          <div class="pp-x pp-pm">{{ bs.text }}</div>
+        </div>
+      {%- when 'trio' -%}
+        <div class="pp-w pp-bs" {{ b.shopify_attributes }}>
+          {%- if bs.heading != blank -%}<h2 class="pp-h">{{ bs.heading }}</h2>{%- endif -%}
+          <div class="pp-tr">
+            {%- for i in (1..3) -%}
+              {%- assign ik = 'i' | append: i -%}
+              {%- assign ck = 'k' | append: i -%}
+              {%- if bs[ik] != blank -%}
+              <figure><div class="pp-sq">{{ bs[ik] | image_url: width: 800 | image_tag: loading: 'lazy', widths: '400, 600, 800', sizes: '(min-width:769px) 33vw, 100vw', alt: bs[ck] }}</div><figcaption>{{ bs[ck] }}</figcaption></figure>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- when 'products' -%}
+        {%- liquid
+          assign list = bs.list
+          if list == blank and bs.collection != blank
+            assign list = bs.collection.products
+          endif
+        -%}
+        {%- if list.size > 0 -%}
+        <div class="pp-w pp-bs" {{ b.shopify_attributes }}>
+          {%- if bs.eyebrow != blank -%}<p class="pp-sm">{{ bs.eyebrow }}</p>{%- endif -%}
+          {%- if bs.heading != blank -%}<h2 class="pp-h">{{ bs.heading }}</h2>{%- endif -%}
+          <div class="pp-pg{% if bs.image != blank %} wi{% endif %}" style="--n:{{ bs.cols }}">
+            {%- for q in list limit: bs.limit -%}
+              {%- assign qv = q.selected_or_first_available_variant -%}
+              <article class="pp-cd">
+                <a href="{{ q.url }}" class="pp-ci">{%- if q.featured_image -%}{{ q.featured_image | image_url: width: 700 | image_tag: loading: 'lazy', widths: '300, 500, 700', sizes: '(min-width:769px) 25vw, 50vw', alt: q.featured_image.alt }}{%- endif -%}</a>
+                <h3><a href="{{ q.url }}">{{ q.title }}</a></h3>
+                {%- if bs.desc -%}<p class="pp-sm">{{ q.metafields.custom.short_description | default: q.description | strip_html | truncate: 80 }}</p>{%- endif -%}
+                {%- unless q.has_only_default_variant -%}
+                  <select data-vs aria-label="{{ q.options_with_values.first.name }}">
+                    {%- for v in q.variants -%}<option value="{{ v.id }}" data-p="{{ v.price | money }}"{% unless v.available %} disabled{% endunless %}{% if v.id == qv.id %} selected{% endif %}>{{ v.title }}</option>{%- endfor -%}
+                  </select>
+                {%- endunless -%}
+                <p class="pp-cp" data-cp>{{ qv.price | money }}</p>
+                <button type="button" class="pp-btn" data-q data-vid="{{ qv.id }}" data-a="{{ bs.add }}" data-d="{{ bs.added }}"{% unless qv.available %} disabled{% endunless %}>{% if qv.available %}{{ bs.add }}{% else %}{{ bs.out }}{% endif %}</button>
+              </article>
+            {%- endfor -%}
+            {%- if bs.image != blank -%}<div class="pp-pi">{{ bs.image | image_url: width: 1200 | image_tag: loading: 'lazy', widths: '500, 800, 1200', sizes: '(min-width:769px) 45vw, 100vw', alt: bs.image.alt }}</div>{%- endif -%}
+          </div>
+        </div>
+        {%- endif -%}
+    {%- endcase -%}
+  {%- endfor -%}
+  {%- if s.bar -%}
+  <div class="pp-bar">
+    <div class="pp-w">
+      {%- for i in (1..3) -%}
+        {%- assign bk = 'b' | append: i -%}
+        {%- if s[bk] != blank -%}<span><svg width="16" height="16" aria-hidden="true"><use href="#pp-i"/></svg>{{ s[bk] }}</span>{%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+  {%- endif -%}
+  
+  <!-- JSON-LD Fixed -->
+  <script type="application/ld+json">
+    {{ p | structured_data }}
+  </script>
+
+  {%- if p.variants.size > 1 -%}
+  <script type="application/json" data-v>[{%- for v in p.variants -%}{"id":{{ v.id }},"o":{{ v.options | json }},"a":{{ v.available }},"p":{{ v.price | money | json }},"c":{{ v.compare_at_price | money | json }},"x":{% if v.compare_at_price > v.price %}true{% else %}false{% endif %},"m":{{ v.featured_image.id | default: 0 }}}{% unless forloop.last %},{% endunless %}{%- endfor -%}]</script>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+.pp{background:var(--bg);color:var(--tx);font:var(--fs)/1.6 var(--bf);-webkit-font-smoothing:antialiased}
+.pp *,.pp *::before,.pp *::after{box-sizing:border-box}
+.pp img,.pp video{display:block;width:100%;height:100%;object-fit:cover}
+.pp a{color:inherit}
+.pp h1,.pp h2,.pp h3,.pp p,.pp dl,.pp dd,.pp ul,.pp figure,.pp fieldset{margin:0;padding:0;border:0}
+.pp ul{list-style:none}
+.pp button,.pp select,.pp input{font:inherit;color:inherit}
+.pp [hidden]{display:none!important}
+.pp-w{max-width:var(--mw);margin:0 auto;padding:0 var(--gp)}
+.pp-sm{font-size:.85em;color:var(--mu)}
+.pp-bc{display:flex;flex-wrap:wrap;gap:8px;padding-top:16px;font-size:.8em;color:var(--mu)}
+.pp-bc a{text-decoration:none}
+.pp-bc a::after{content:"›";margin-left:8px}
+.pp-main{display:grid;grid-template-columns:minmax(0,var(--gw)) minmax(0,var(--iw));gap:calc(var(--gp)*2);padding-top:var(--pt);padding-bottom:var(--pb);align-items:start}
+.pp-g{position:relative;min-width:0}
+.pp-bg{position:absolute;top:0;left:0;z-index:1;font-size:.75em;color:var(--ac)}
+.pp-st{aspect-ratio:var(--ar);position:relative;overflow:hidden}
+.pp-st img{display:none;object-fit:var(--fit)}
+.pp-st img.on{display:block}
+.pp-th{display:flex;gap:8px;margin-top:16px;overflow-x:auto;scrollbar-width:none}
+.pp-th button{flex:0 0 calc((100% - 32px)/5);min-width:72px;aspect-ratio:1;padding:0;border:1px solid transparent;background:none;cursor:pointer;overflow:hidden}
+.pp-th button.on{border-color:var(--tx)}
+.pp-i{display:flex;flex-direction:column;gap:28px;min-width:0} /* Increased gap for airy Aesop look */
+.pp-sk{position:sticky;top:var(--gp)}
+.pp-t{font:400 36px/1.2 var(--hf);letter-spacing:-0.02em} /* Larger title */
+.pp-pr{display:flex;gap:12px;align-items:baseline;font-size:1.6em;font-weight:500;margin-top:4px} /* Bold price */
+.pp-pr s{color:var(--mu);font-size:0.6em;font-weight:400;text-decoration:line-through}
+.pp-tx p+p{margin-top:.75em}
+.pp-tx a{text-underline-offset:3px}
+.pp-o fieldset{min-width:0}
+.pp-o legend{margin-bottom:8px}
+.pp-ob{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:8px}
+.pp-ob label{position:relative;display:block}
+.pp-ob input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.pp-ob span{display:block;padding:14px 12px;text-align:center;border:1px solid var(--bd);font-size:0.9em}
+.pp-ob input:checked+span{border:2px solid var(--tx);padding:13px 11px}
+.pp-ob input:focus-visible+span{outline:2px solid var(--tx);outline-offset:2px}
+.pp-o select,.pp-cd select{width:100%;padding:18px 16px;background:transparent;border:1px solid var(--bd);border-radius:0;font-size:1em;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+.pp-qt{display:flex;align-items:center;gap:12px}
+.pp-qt input{width:80px;padding:12px;background:transparent;border:1px solid var(--bd);font-size:1em}
+.pp-f{display:grid;gap:8px}
+.pp-btn{display:block;width:100%;padding:18px 16px;background:var(--bt) !important;color:var(--btx) !important;border:1px solid var(--bt) !important;text-align:center;cursor:pointer;font-weight:500;text-transform:uppercase;letter-spacing:1px;font-size:0.9em;transition:opacity 0.2s}
+.pp-btn:hover{opacity:0.9}
+.pp-btn:disabled{opacity:.5;cursor:not-allowed}
+.pp-btn:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+.pp-in{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:.9em;margin-top:4px}
+.pp-in b{padding:4px 12px;border-radius:99px;font-weight:600;font-size:0.85em}
+.pp-ac{border-bottom:1px solid var(--bd);margin-top:8px}
+.pp-ac summary{display:flex;justify-content:space-between;align-items:center;padding:18px 0;cursor:pointer;list-style:none;font-size:1.1em;font-weight:400}
+.pp-ac summary::-webkit-details-marker{display:none}
+.pp-ac summary::after{content:"+";display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--tx);border-radius:50%;font-size:16px;line-height:1;font-weight:300}
+.pp-ac[open] summary::after{content:"−"}
+.pp-ac .pp-tx{padding-bottom:18px;font-size:0.9em;line-height:1.6}
+.pp-us{display:grid;gap:16px;font-size:.9em;margin-top:8px}
+.pp-us li{display:flex;gap:14px;align-items:center}
+.pp-us li svg{flex-shrink:0;stroke-width:1.2}
+.pp-tb{padding-top:var(--pb);padding-bottom:var(--pb)}
+.pp-tn{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border-bottom:1px solid var(--bd);margin-bottom:32px;overflow-x:auto;scrollbar-width:none}
+.pp-tn button{padding:16px 8px;background:none;border:0;border-bottom:1px solid transparent;margin-bottom:-1px;color:var(--mu);cursor:pointer;text-align:left;white-space:nowrap;font-size:1.1em}
+.pp-tn button.on{color:var(--tx);border-bottom-color:var(--tx)}
+.pp-tp{max-width:none;font-size:.9em;line-height:1.7}
+.pp-2{display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+.pp-2.rv .pp-m{order:2}
+.pp-m{position:relative;aspect-ratio:1;overflow:hidden}
+.pp-m.tall{aspect-ratio:4/5}
+.pp-m img,.pp-m video{position:absolute;inset:0}
+.pp-pz{position:absolute;left:16px;bottom:16px;width:32px;height:32px;display:grid;place-items:center;border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;cursor:pointer}
+.pp-x{display:flex;flex-direction:column;justify-content:center;gap:32px;padding:calc(var(--gp)*3)}
+.pp-x dl{padding-top:16px;border-top:1px solid var(--bd);display:grid;gap:6px}
+.pp-x dd span{display:block;color:var(--mu)}
+.pp-x dd b{display:block;font-weight:400}
+.pp-lg{font:400 var(--bs)/1.4 var(--hf)}
+.pp-h{font:400 var(--ds)/1.3 var(--hf)}
+.pp-pm{background:var(--pn);align-items:center;text-align:center;font:400 calc(var(--bs)*.8)/1.8 var(--hf)}
+.pp-pm p+p{margin-top:1.6em}
+.pp-bs{padding-top:var(--pb);padding-bottom:var(--pb);display:grid;gap:24px}
+.pp-tr{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gp)}
+.pp-sq{aspect-ratio:1;overflow:hidden;margin-bottom:16px}
+.pp-pg{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:var(--gp);align-items:start}
+.pp-pg.wi{grid-template-columns:repeat(var(--n),minmax(0,1fr)) minmax(0,1.6fr)}
+.pp-pi{align-self:stretch;min-height:320px;position:relative}
+.pp-pi img{position:absolute;inset:0}
+.pp-cd{display:grid;gap:12px}
+.pp-ci{display:block;aspect-ratio:4/5;overflow:hidden;margin-bottom:12px}
+.pp-ci img{object-fit:contain}
+.pp-cd h3{font-size:1em;font-weight:500}
+.pp-cd h3 a{text-decoration:none}
+.pp-cp{margin:4px 0;font-weight:500}
+.pp-bar{background:var(--dk);color:var(--dkt);padding:28px 0;font-size:.85em}
+.pp-bar .pp-w{display:flex;flex-wrap:wrap;justify-content:center;gap:16px 56px}
+.pp-bar span{display:flex;align-items:center;gap:10px}
+@media(max-width:768px){
+.pp-main,.pp-2,.pp-tr,.pp-pg,.pp-pg.wi{grid-template-columns:1fr}
+.pp-pg,.pp-pg.wi{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pp-pi{grid-column:1/-1;min-height:260px}
+.pp-sk{position:static}
+.pp-2.rv .pp-m{order:0}
+.pp-x{padding:32px var(--gp)}
+.pp-lg{font-size:calc(var(--bs)*.8)}
+.pp-tn{grid-auto-columns:max-content;gap:16px}
+.pp-t{font-size:28px}
+.pp-pr{font-size:1.3em}
+}
+{% endstylesheet %}
+
+{% javascript %}
+(()=>{
+const R=(window.Shopify&&Shopify.routes&&Shopify.routes.root)||'/';
+const add=async(id,quantity)=>{
+const r=await fetch(R+'cart/add.js',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({id:Number(id),quantity:Number(quantity)||1})});
+if(!r.ok)throw new Error(r.status);
+await r.json();
+const c=await(await fetch(R+'cart.js')).json();
+document.querySelectorAll('[data-cart-count]').forEach(e=>{e.textContent=c.item_count});
+document.dispatchEvent(new CustomEvent('cart:updated',{detail:c}));
+return c};
+const flash=(b,t)=>{const o=b.textContent;b.textContent=t;b.disabled=true;setTimeout(()=>{b.textContent=o;b.disabled=false},1600)};
+const done=(root)=>{if(root.dataset.redirect==='true')location.href=R+'cart'};
+const variants=root=>root._v||(root._v=JSON.parse(root.querySelector('[data-v]').textContent));
+const show=(root,mid)=>{
+const im=root.querySelector('.pp-st img[data-m="'+mid+'"]');
+if(!im)return;
+root.querySelectorAll('.pp-st img.on').forEach(e=>e.classList.remove('on'));
+im.classList.add('on');
+root.querySelectorAll('[data-th]').forEach(t=>t.classList.toggle('on',t.dataset.m===String(mid)))};
+document.addEventListener('click',async e=>{
+const t=e.target.closest('[data-th],[data-tab],[data-pause],[data-q]');
+if(!t)return;
+const root=t.closest('.pp');
+if(t.matches('[data-th]'))show(root,t.dataset.m);
+else if(t.matches('[data-tab]')){
+root.querySelectorAll('[data-tab]').forEach(b=>{const on=b===t;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+root.querySelectorAll('[data-panel]').forEach(p=>{p.hidden=p.dataset.panel!==t.dataset.tab})}
+else if(t.matches('[data-pause]')){
+const v=t.previousElementSibling;
+if(v&&v.tagName==='VIDEO'){v.paused?v.play():v.pause()}}
+else if(t.matches('[data-q]')){
+try{await add(t.dataset.vid,1);flash(t,t.dataset.d);done(root)}catch(_){flash(t,'Error')}}});
+document.addEventListener('change',e=>{
+const root=e.target.closest('.pp');
+if(!root)return;
+if(e.target.matches('[data-vs]')){
+const o=e.target.selectedOptions[0];
+const c=e.target.closest('.pp-cd');
+c.querySelector('[data-cp]').textContent=o.dataset.p;
+c.querySelector('[data-q]').dataset.vid=o.value;
+return}
+if(!e.target.matches('.pp-o input,.pp-o select'))return;
+const vals=[];
+root.querySelectorAll('.pp-o [name^="o"]').forEach(el=>{if(el.type!=='radio'||el.checked)vals[Number(el.name.slice(1))]=el.value});
+const key=vals.join('|');
+const v=variants(root).find(x=>x.o.join('|')===key);
+const btn=root.querySelector('[data-add]');
+const id=root.querySelector('[data-id]');
+if(!v){if(btn){btn.disabled=true;btn.textContent=btn.dataset.u}return}
+if(id)id.value=v.id;
+const p=root.querySelector('[data-p]'),c=root.querySelector('[data-c]');
+if(p)p.textContent=v.p;
+if(c){c.textContent=v.c;c.hidden=!v.x}
+if(btn){btn.disabled=!v.a;btn.textContent=v.a?btn.dataset.a:btn.dataset.o}
+if(v.m)show(root,v.m);
+const u=new URL(location.href);u.searchParams.set('variant',v.id);history.replaceState(null,'',u)});
+document.addEventListener('submit',async e=>{
+const f=e.target.closest('.pp-f');
+if(!f)return;
+e.preventDefault();
+const root=f.closest('.pp'),b=f.querySelector('[data-add]');
+const q=root.querySelector('input[name="quantity"]');
+try{await add(f.querySelector('[data-id]').value,q?q.value:1);flash(b,b.dataset.d);done(root)}catch(_){flash(b,'Error')}});
+})();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Product page",
+  "tag": "section",
+  "class": "pp-section",
+  "enabled_on": {"templates": ["product"]},
+  "settings": [
+    {"type": "header", "content": "Colors"},
+    {"type": "color", "id": "c_bg", "label": "Background", "default": "#fffef2"},
+    {"type": "color", "id": "c_tx", "label": "Text", "default": "#333333"},
+    {"type": "color", "id": "c_mu", "label": "Muted text", "default": "#6b6b63"},
+    {"type": "color", "id": "c_ac", "label": "Badge text", "default": "#8a5a1c"},
+    {"type": "color", "id": "c_bt", "label": "Button background", "default": "#1f1f1f"},
+    {"type": "color", "id": "c_btx", "label": "Button text", "default": "#ffffff"},
+    {"type": "color", "id": "c_bd", "label": "Borders", "default": "#cfcdc2"},
+    {"type": "color", "id": "c_pn", "label": "Panel background", "default": "#f2f0e4"},
+    {"type": "color", "id": "c_dk", "label": "Info bar background", "default": "#2b2b2b"},
+    {"type": "color", "id": "c_dkt", "label": "Info bar text", "default": "#ffffff"},
+    {"type": "header", "content": "Typography"},
+    {"type": "font_picker", "id": "f_h", "label": "Heading font", "default": "assistant_n4"},
+    {"type": "font_picker", "id": "f_b", "label": "Body font", "default": "assistant_n4"},
+    {"type": "range", "id": "fs", "label": "Body size", "min": 12, "max": 18, "step": 1, "unit": "px", "default": 14},
+    {"type": "range", "id": "h_size", "label": "Product title size", "min": 24, "max": 48, "step": 1, "unit": "px", "default": 36},
+    {"type": "range", "id": "hd_size", "label": "Section heading size", "min": 18, "max": 48, "step": 1, "unit": "px", "default": 28},
+    {"type": "range", "id": "big_size", "label": "Large statement size", "min": 18, "max": 44, "step": 1, "unit": "px", "default": 28},
+    {"type": "header", "content": "Layout"},
+    {"type": "range", "id": "mw", "label": "Maximum width", "min": 1000, "max": 2000, "step": 20, "unit": "px", "default": 1600},
+    {"type": "range", "id": "gp", "label": "Side padding and gaps", "min": 12, "max": 48, "step": 4, "unit": "px", "default": 24},
+    {"type": "range", "id": "pt", "label": "Top spacing", "min": 0, "max": 100, "step": 4, "unit": "px", "default": 32},
+    {"type": "range", "id": "pb", "label": "Section spacing", "min": 0, "max": 120, "step": 4, "unit": "px", "default": 56},
+    {"type": "range", "id": "gw", "label": "Gallery width", "min": 50, "max": 75, "step": 5, "unit": "%", "default": 65},
+    {"type": "checkbox", "id": "sticky", "label": "Sticky product info on desktop", "default": true},
+    {"type": "checkbox", "id": "bc", "label": "Show breadcrumb", "default": true},
+    {"type": "header", "content": "Gallery"},
+    {"type": "select", "id": "ar", "label": "Image ratio", "default": "1/1", "options": [
+      {"value": "1/1", "label": "Square"},
+      {"value": "4/5", "label": "Portrait"},
+      {"value": "3/4", "label": "Tall portrait"},
+      {"value": "4/3", "label": "Landscape"},
+      {"value": "16/10", "label": "Wide"}
+    ]},
+    {"type": "select", "id": "fit", "label": "Image fit", "default": "contain", "options": [
+      {"value": "contain", "label": "Show full image"},
+      {"value": "cover", "label": "Fill area"}
+    ]},
+    {"type": "checkbox", "id": "thumbs", "label": "Show thumbnails", "default": true},
+    {"type": "text", "id": "badge", "label": "Badge text", "default": "New addition"},
+    {"type": "header", "content": "Tabs"},
+    {"type": "checkbox", "id": "tabs", "label": "Show tabs", "default": true},
+    {"type": "text", "id": "t1", "label": "Tab 1 title", "default": "Description"},
+    {"type": "richtext", "id": "c1", "label": "Tab 1 content", "info": "Empty uses the product description."},
+    {"type": "text", "id": "t2", "label": "Tab 2 title", "default": "Ingredients"},
+    {"type": "richtext", "id": "c2", "label": "Tab 2 content", "info": "Empty uses metafield custom.ingredients."},
+    {"type": "text", "id": "t3", "label": "Tab 3 title", "default": "Packaging and recycling"},
+    {"type": "richtext", "id": "c3", "label": "Tab 3 content", "info": "Empty uses metafield custom.packaging."},
+    {"type": "text", "id": "t4", "label": "Tab 4 title", "default": "What's new"},
+    {"type": "richtext", "id": "c4", "label": "Tab 4 content", "info": "Empty uses metafield custom.whats_new."},
+    {"type": "header", "content": "Info bar"},
+    {"type": "checkbox", "id": "bar", "label": "Show info bar", "default": true},
+    {"type": "text", "id": "b1", "label": "Item 1", "default": "Complimentary shipping"},
+    {"type": "text", "id": "b2", "label": "Item 2", "default": "Secure checkout"},
+    {"type": "text", "id": "b3", "label": "Item 3", "default": "Complimentary samples"},
+    {"type": "header", "content": "Cart"},
+    {"type": "checkbox", "id": "redirect", "label": "Go to cart after adding", "default": false}
+  ],
+  "blocks": [
+    {"type": "title", "name": "Title", "limit": 1, "settings": [
+      {"type": "select", "id": "tag", "label": "Heading tag", "default": "h1", "options": [
+        {"value": "h1", "label": "H1"},
+        {"value": "h2", "label": "H2"},
+        {"value": "h3", "label": "H3"}
+      ]},
+      {"type": "text", "id": "custom", "label": "Custom title text", "info": "Leave empty to use the product title."}
+    ]},
+    {"type": "price", "name": "Price", "limit": 1, "settings": [
+      {"type": "checkbox", "id": "compare", "label": "Show compare-at price", "default": true},
+      {"type": "text", "id": "tax", "label": "Tax note", "default": "Taxes included. Shipping calculated at checkout."},
+      {"type": "text", "id": "label", "label": "Price label", "info": "Optional text before the price."}
+    ]},
+    {"type": "text", "name": "Short description", "settings": [
+      {"type": "richtext", "id": "text", "label": "Text", "info": "Empty uses metafield custom.short_description, then the product description."},
+      {"type": "range", "id": "len", "label": "Fallback length", "min": 60, "max": 300, "step": 10, "default": 140}
+    ]},
+    {"type": "variants", "name": "Variant picker", "limit": 1, "settings": [
+      {"type": "select", "id": "style", "label": "Style", "default": "buttons", "options": [
+        {"value": "buttons", "label": "Buttons"},
+        {"value": "select", "label": "Dropdown"}
+      ]},
+      {"type": "checkbox", "id": "label", "label": "Show option names", "default": false}
+    ]},
+    {"type": "quantity", "name": "Quantity", "limit": 1, "settings": [
+      {"type": "text", "id": "label", "label": "Label", "default": "Quantity"}
+    ]},
+    {"type": "buy_buttons", "name": "Buy buttons", "limit": 1, "settings": [
+      {"type": "text", "id": "add", "label": "Add to cart text", "default": "Add to cart"},
+      {"type": "text", "id": "added", "label": "Added text", "default": "Added"},
+      {"type": "text", "id": "out", "label": "Sold out text", "default": "Sold out"},
+      {"type": "text", "id": "unavail", "label": "Unavailable text", "default": "Unavailable"},
+      {"type": "checkbox", "id": "dynamic", "label": "Show dynamic checkout buttons", "default": false}
+    ]},
+    {"type": "installments", "name": "Installments", "limit": 1, "settings": [
+      {"type": "text", "id": "label", "label": "Label", "default": "Interest-free installments"},
+      {"type": "text", "id": "n1", "label": "Provider 1", "default": "tabby"},
+      {"type": "color", "id": "k1", "label": "Provider 1 background", "default": "#3bffc1"},
+      {"type": "color", "id": "t1", "label": "Provider 1 text", "default": "#111111"},
+      {"type": "text", "id": "n2", "label": "Provider 2", "default": "tamara"},
+      {"type": "color", "id": "k2", "label": "Provider 2 background", "default": "#ffc9d9"},
+      {"type": "color", "id": "t2", "label": "Provider 2 text", "default": "#111111"}
+    ]},
+    {"type": "accordion", "name": "Accordion", "settings": [
+      {"type": "text", "id": "heading", "label": "Heading", "default": "Key ingredients"},
+      {"type": "richtext", "id": "content", "label": "Content", "default": "<p>Magnolia Leaf, Roman Chamomile, Cedar Heart</p>"},
+      {"type": "text", "id": "mkey", "label": "Metafield key", "default": "key_ingredients", "info": "Used when content is empty. Namespace: custom."},
+      {"type": "checkbox", "id": "open", "label": "Open by default", "default": false}
+    ]},
+    {"type": "usp", "name": "Benefits list", "settings": [
+      {"type": "text", "id": "u1", "label": "Item 1", "default": "Complimentary gifts with online orders over AED450"},
+      {"type": "text", "id": "u2", "label": "Item 2", "default": "Complimentary shipping"},
+      {"type": "text", "id": "u3", "label": "Item 3", "default": "Ethically sourced ingredients"},
+      {"type": "text", "id": "u4", "label": "Item 4", "default": "Complimentary samples included"}
+    ]},
+    {"type": "@app"},
+    {"type": "how_to_use", "name": "How to use band", "settings": [
+      {"type": "video", "id": "video", "label": "Video"},
+      {"type": "image_picker", "id": "image", "label": "Image", "info": "Shown when no video is set."},
+      {"type": "text", "id": "eyebrow", "label": "Small heading", "default": "How to use"},
+      {"type": "richtext", "id": "text", "label": "Statement", "default": "<p>Apply as desired to wrists and neck. Throughout the day, the uniquely floral aromatic profile will develop, revealing its herbaceous core.</p>"},
+      {"type": "text", "id": "l1", "label": "Note 1 label", "default": "Top notes"},
+      {"type": "text", "id": "v1", "label": "Note 1 text", "default": "Roman Chamomile, Cardamom, Pink Pepper"},
+      {"type": "text", "id": "l2", "label": "Note 2 label", "default": "Middle notes"},
+      {"type": "text", "id": "v2", "label": "Note 2 text", "default": "Magnolia Leaf, Geranium, Cardamom"},
+      {"type": "text", "id": "l3", "label": "Note 3 label", "default": "Base notes"},
+      {"type": "text", "id": "v3", "label": "Note 3 text", "default": "Sandalwood, Cedar Heart, Cypriol Heart"}
+    ]},
+    {"type": "feature", "name": "Image and text band", "settings": [
+      {"type": "image_picker", "id": "image", "label": "Image"},
+      {"type": "select", "id": "side", "label": "Image position", "default": "right", "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "right", "label": "Right"}
+      ]},
+      {"type": "text", "id": "eyebrow", "label": "Small heading", "default": "The aroma"},
+      {"type": "text", "id": "heading", "label": "Heading", "default": "A defiant bloom"},
+      {"type": "text", "id": "l1", "label": "Item 1 label", "default": "The Fabulist Accord"},
+      {"type": "text", "id": "h1", "label": "Item 1 title", "default": "Silver Ore"},
+      {"type": "text", "id": "t1", "label": "Item 1 text", "default": "Iridescence evoked by Patchouli Heart, Roman Chamomile and Pink Pepper."},
+      {"type": "text", "id": "l2", "label": "Item 2 label", "default": "The Radical Ingredient"},
+      {"type": "text", "id": "h2", "label": "Item 2 title", "default": "Magnolia Leaf"},
+      {"type": "text", "id": "t2", "label": "Item 2 text", "default": "Bringing an unabashed herbaceousness."}
+    ]},
+    {"type": "poem", "name": "Statement band", "settings": [
+      {"type": "image_picker", "id": "image", "label": "Image"},
+      {"type": "select", "id": "side", "label": "Image position", "default": "left", "options": [
+        {"value": "left", "label": "Left"},
+        {"value": "right", "label": "Right"}
+      ]},
+      {"type": "richtext", "id": "text", "label": "Text", "default": "<p>An emboldened spirit<br>Fiercely delicate<br>Tenderly strong</p><p>Like magnolia adorned<br>With richly scented leaves<br>Blooming</p>"}
+    ]},
+    {"type": "trio", "name": "Three images", "settings": [
+      {"type": "text", "id": "heading", "label": "Heading", "default": "The Fabulist Accord"},
+      {"type": "image_picker", "id": "i1", "label": "Image 1"},
+      {"type": "text", "id": "k1", "label": "Caption 1", "default": "Patchouli heart"},
+      {"type": "image_picker", "id": "i2", "label": "Image 2"},
+      {"type": "text", "id": "k2", "label": "Caption 2", "default": "Roman chamomile"},
+      {"type": "image_picker", "id": "i3", "label": "Image 3"},
+      {"type": "text", "id": "k3", "label": "Caption 3", "default": "Pink pepper"}
+    ]},
+    {"type": "products", "name": "Product grid", "settings": [
+      {"type": "text", "id": "eyebrow", "label": "Small heading"},
+      {"type": "text", "id": "heading", "label": "Heading", "default": "Sensorial pairings for our scents"},
+      {"type": "product_list", "id": "list", "label": "Products", "limit": 8},
+      {"type": "collection", "id": "collection", "label": "Collection", "info": "Used when no products are chosen."},
+      {"type": "range", "id": "cols", "label": "Columns", "min": 2, "max": 4, "step": 1, "default": 2},
+      {"type": "range", "id": "limit", "label": "Maximum products", "min": 2, "max": 8, "step": 1, "default": 4},
+      {"type": "checkbox", "id": "desc", "label": "Show description", "default": true},
+      {"type": "image_picker", "id": "image", "label": "Side image", "info": "Optional image shown beside the products."},
+      {"type": "text", "id": "add", "label": "Add to cart text", "default": "Add to cart"},
+      {"type": "text", "id": "added", "label": "Added text", "default": "Added"},
+      {"type": "text", "id": "out", "label": "Sold out text", "default": "Sold out"}
+    ]}
+  ]
+}
+{% endschema %}

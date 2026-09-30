@@ -1,0 +1,261 @@
+{% liquid
+  assign section_id = 'aesop-seamless-' | append: section.id
+%}
+
+<section id="{{ section_id }}" class="aesop-seamless-banner" style="--aesop-margin-top: {{ section.settings.margin_top }}px; --aesop-margin-bottom: {{ section.settings.margin_bottom }}px; --aesop-height: {{ section.settings.section_height }}px;">
+  <div class="aesop-seamless-banner__bg">
+    {% if section.settings.image != blank %}
+      {{ section.settings.image | image_url: width: 2200 | image_tag: class: 'aesop-seamless-banner__img', loading: 'lazy', widths: '750, 1100, 1500, 1780, 2000, 2200', alt: section.settings.heading | escape }}
+    {% else %}
+      <div class="aesop-seamless-banner__placeholder"></div>
+    {% endif %}
+  </div>
+
+  <div class="aesop-seamless-banner__content-wrapper">
+    <div class="aesop-seamless-banner__inner">
+      {% if section.settings.eyebrow != blank %}
+        <p class="aesop-seamless-banner__eyebrow">{{ section.settings.eyebrow }}</p>
+      {% endif %}
+      
+      {% if section.settings.heading != blank %}
+        <h2 class="aesop-seamless-banner__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+      
+      {% if section.settings.description != blank %}
+        <div class="aesop-seamless-banner__description">
+          {{ section.settings.description }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.button_text != blank %}
+        <a href="{% if section.settings.button_link != blank %}{{ section.settings.button_link }}{% else %}#{% endif %}" class="aesop-seamless-banner__button">
+          <span>{{ section.settings.button_text }}</span>
+          <span class="aesop-seamless-banner__arrow" aria-hidden="true">&rarr;</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<style>
+  #{{ section_id }} {
+    position: relative;
+    width: 100%;
+    min-height: var(--aesop-height);
+    margin-top: var(--aesop-margin-top);
+    margin-bottom: var(--aesop-margin-bottom);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  #{{ section_id }} * {
+    box-sizing: border-box;
+  }
+
+  /* Full Width Background Image */
+  #{{ section_id }} .aesop-seamless-banner__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center right;
+    display: block;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: #331e17;
+  }
+
+  /* Left Side Content Overlay */
+  #{{ section_id }} .aesop-seamless-banner__content-wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 60px 40px 60px 80px;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__inner {
+    max-width: 440px;
+    color: #F3EFEA;
+    background: transparent;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__eyebrow {
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    margin: 0 0 18px 0;
+    color: #F3EFEA;
+    opacity: 0.85;
+    font-weight: 400;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__heading {
+    font-family: "Zapf Humanist", "Optima", "Georgia", "Times New Roman", serif;
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px 0;
+    color: #F3EFEA;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__description {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #F3EFEA;
+    opacity: 0.85;
+    font-weight: 300;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__description p {
+    margin: 0;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 140px;
+    height: 44px;
+    padding: 0 20px;
+    margin-top: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: transparent;
+    color: #F3EFEA;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.25s ease;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__button:hover {
+    border-color: #F3EFEA;
+    background-color: #F3EFEA;
+    color: #331e17;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__arrow {
+    font-size: 15px;
+    margin-left: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  #{{ section_id }} .aesop-seamless-banner__button:hover .aesop-seamless-banner__arrow {
+    transform: translateX(4px);
+  }
+
+  /* Responsive Layout */
+  @media screen and (max-width: 989px) {
+    #{{ section_id }} .aesop-seamless-banner__content-wrapper {
+      padding: 50px 32px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    #{{ section_id }} .aesop-seamless-banner__content-wrapper {
+      padding: 40px 20px;
+    }
+
+    #{{ section_id }} .aesop-seamless-banner__heading {
+      font-size: 24px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Aesop Seamless Banner",
+  "tag": "section",
+  "class": "section-aesop-seamless",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Full Banner Image (Wood Background)"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow Text",
+      "default": "For a limited time"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "An aromatic opportunity"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>To offer curious noses a chance for aromatic explorations, purchases above AED450 currently come with complimentary samples of our Entirely Aumer and Tacit Truths Eaux de Parfum.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Label (Optional)"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "range",
+      "id": "section_height",
+      "label": "Section Height (Desktop)",
+      "min": 350,
+      "max": 700,
+      "step": 10,
+      "unit": "px",
+      "default": 450
+    },
+    {
+      "type": "header",
+      "content": "Section Margins"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "label": "Top Margin",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "label": "Bottom Margin",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Aesop Seamless Banner"
+    }
+  ]
+}
+{% endschema %}

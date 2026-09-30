@@ -1,0 +1,319 @@
+{% liquid
+  assign section_id = 'aesop-account-' | append: section.id
+%}
+
+<div id="{{ section_id }}" class="aesop-account">
+  <div class="aesop-account__container">
+    
+    <!-- ============================================= -->
+    <!-- LEFT SIDE: SIGN IN                            -->
+    <!-- ============================================= -->
+    <div class="aesop-account__col aesop-account__col--login">
+      <h1 class="aesop-account__title">Sign in</h1>
+      <p class="aesop-account__subtext">Required fields are marked with an (*).</p>
+
+      {%- form 'customer_login', class: 'aesop-account__form' -%}
+        {%- if form.errors -%}
+          <div class="aesop-account__error">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <div class="aesop-account__field">
+          <input type="email" name="customer[email]" class="aesop-account__input" placeholder="Email*" required>
+        </div>
+
+        <div class="aesop-account__field">
+          <input type="password" name="customer[password]" class="aesop-account__input" placeholder="Password*" required>
+        </div>
+
+        <a href="#recover" class="aesop-account__forgot" data-recover-toggle>Forgot your password?</a>
+
+        <button type="submit" class="aesop-account__button">Sign in</button>
+      {%- endform -%}
+
+      <!-- Password Recovery Form (Hidden by default) -->
+      <div class="aesop-account__recover" data-recover-form style="display: none;">
+        <h2 class="aesop-account__subtitle">Reset your password</h2>
+        <p class="aesop-account__subtext">We will send you an email to reset your password.</p>
+        {%- form 'recover_customer_password', class: 'aesop-account__form' -%}
+          {%- if form.posted_successfully? -%}
+            <p class="aesop-account__success">We've sent you an email with a link to update your password.</p>
+          {%- endif -%}
+          <div class="aesop-account__field">
+            <input type="email" name="email" class="aesop-account__input" placeholder="Email*" required>
+          </div>
+          <button type="submit" class="aesop-account__button">Submit</button>
+          <a href="#" class="aesop-account__cancel" data-recover-cancel>Cancel</a>
+        {%- endform -%}
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- RIGHT SIDE: CREATE ACCOUNT                    -->
+    <!-- ============================================= -->
+    <div class="aesop-account__col aesop-account__col--register">
+      <h1 class="aesop-account__title">Create an account</h1>
+
+      {%- form 'create_customer', class: 'aesop-account__form' -%}
+        {%- if form.errors -%}
+          <div class="aesop-account__error">
+            {{ form.errors | default_errors }}
+          </div>
+        {%- endif -%}
+
+        <div class="aesop-account__row">
+          <div class="aesop-account__field">
+            <input type="text" name="customer[first_name]" class="aesop-account__input" placeholder="First name*" required>
+          </div>
+          <div class="aesop-account__field">
+            <input type="text" name="customer[last_name]" class="aesop-account__input" placeholder="Last name*" required>
+          </div>
+        </div>
+
+        <div class="aesop-account__field">
+          <input type="email" name="customer[email]" class="aesop-account__input" placeholder="Email*" required>
+        </div>
+
+        <div class="aesop-account__field">
+          <input type="tel" name="customer[phone]" class="aesop-account__input" placeholder="Phone number*">
+        </div>
+
+        <div class="aesop-account__field">
+          <input type="password" name="customer[password]" class="aesop-account__input" placeholder="Password*" required>
+        </div>
+
+        <label class="aesop-account__checkbox-label">
+          <input type="checkbox" required>
+          <span>I consent to receive occasional marketing communications and event invitations from Mizzen General Trading, its affiliates, and group companies via phone, email, SMS, or WhatsApp channels</span>
+        </label>
+
+        <p class="aesop-account__terms">
+          By creating an account, you confirm you have read and understood our <a href="/policies/terms-of-service">Terms and Conditions</a>
+        </p>
+
+        <button type="submit" class="aesop-account__button">Create account</button>
+      {%- endform -%}
+    </div>
+
+  </div>
+</div>
+
+<style>
+  #{{ section_id }} {
+    background-color: #FBFBF9;
+    color: #222;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    padding: 60px 5% 100px;
+  }
+
+  #{{ section_id }} * {
+    box-sizing: border-box;
+  }
+
+  #{{ section_id }} .aesop-account__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 80px;
+  }
+
+  /* --- Typography --- */
+  #{{ section_id }} .aesop-account__title {
+    font-family: "Zapf Humanist", "Optima", "Georgia", serif;
+    font-size: 36px;
+    font-weight: 300;
+    margin: 0 0 12px 0;
+    color: #222;
+    line-height: 1.2;
+  }
+
+  #{{ section_id }} .aesop-account__subtext {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 30px 0;
+  }
+
+  #{{ section_id }} .aesop-account__subtitle {
+    font-family: "Zapf Humanist", "Optima", "Georgia", serif;
+    font-size: 24px;
+    font-weight: 300;
+    margin: 0 0 10px 0;
+  }
+
+  /* --- Form Fields --- */
+  #{{ section_id }} .aesop-account__field {
+    margin-bottom: 16px;
+  }
+
+  #{{ section_id }} .aesop-account__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 16px;
+  }
+
+  #{{ section_id }} .aesop-account__input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #{{ section_id }} .aesop-account__input:focus {
+    border-color: #333;
+  }
+
+  #{{ section_id }} .aesop-account__input::placeholder {
+    color: #888;
+  }
+
+  /* --- Forgot Password Link --- */
+  #{{ section_id }} .aesop-account__forgot {
+    display: inline-block;
+    font-size: 14px;
+    color: #222;
+    text-decoration: underline;
+    margin-bottom: 30px;
+    text-underline-offset: 3px;
+  }
+
+  /* --- Buttons --- */
+  #{{ section_id }} .aesop-account__button {
+    display: block;
+    width: 100%;
+    background: #4A4A4A;
+    color: #fff;
+    border: none;
+    padding: 16px 30px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-bottom: 20px;
+  }
+
+  #{{ section_id }} .aesop-account__button:hover {
+    opacity: 0.85;
+  }
+
+  /* --- Checkbox --- */
+  #{{ section_id }} .aesop-account__checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #444;
+    margin: 20px 0;
+    cursor: pointer;
+  }
+
+  #{{ section_id }} .aesop-account__checkbox-label input {
+    margin-top: 3px;
+    accent-color: #333;
+    width: 16px;
+    height: 16px;
+  }
+
+  /* --- Terms Text --- */
+  #{{ section_id }} .aesop-account__terms {
+    font-size: 13px;
+    color: #444;
+    line-height: 1.5;
+    margin: 0 0 30px 0;
+  }
+
+  #{{ section_id }} .aesop-account__terms a {
+    color: #222;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* --- Success & Error Messages --- */
+  #{{ section_id }} .aesop-account__success {
+    color: #2e7d32;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  #{{ section_id }} .aesop-account__error {
+    color: #d32f2f;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  /* --- Password Recovery --- */
+  #{{ section_id }} .aesop-account__cancel {
+    display: inline-block;
+    font-size: 14px;
+    color: #222;
+    text-decoration: underline;
+    margin-top: 15px;
+    text-underline-offset: 3px;
+  }
+
+  /* --- Responsive Design --- */
+  @media (max-width: 900px) {
+    #{{ section_id }} .aesop-account__container {
+      grid-template-columns: 1fr;
+      gap: 60px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    #{{ section_id }} {
+      padding: 40px 20px 80px;
+    }
+    #{{ section_id }} .aesop-account__title {
+      font-size: 28px;
+    }
+    #{{ section_id }} .aesop-account__row {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const recoverToggle = document.querySelector('[data-recover-toggle]');
+    const recoverForm = document.querySelector('[data-recover-form]');
+    const recoverCancel = document.querySelector('[data-recover-cancel]');
+
+    if (recoverToggle && recoverForm) {
+      recoverToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        recoverForm.style.display = 'block';
+        recoverToggle.style.display = 'none';
+      });
+    }
+
+    if (recoverCancel && recoverForm && recoverToggle) {
+      recoverCancel.addEventListener('click', function(e) {
+        e.preventDefault();
+        recoverForm.style.display = 'none';
+        recoverToggle.style.display = 'inline-block';
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Aesop Account Page",
+  "tag": "section",
+  "class": "section-aesop-account",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Aesop Account Page"
+    }
+  ]
+}
+{% endschema %}

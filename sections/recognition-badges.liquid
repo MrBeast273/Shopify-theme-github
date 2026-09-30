@@ -1,0 +1,154 @@
+<style>
+  .recognition-section-{{ section.id }} {
+    background-color: {{ section.settings.bg_color }};
+    color: {{ section.settings.text_color }};
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    padding-left: 4%;
+    padding-right: 4%;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+  .recognition-grid-{{ section.id }} {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+    text-align: center;
+  }
+  .recognition-item-{{ section.id }} {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 10px;
+  }
+  .recognition-title-{{ section.id }} {
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+    color: {{ section.settings.text_color }};
+  }
+  .recognition-desc-{{ section.id }} {
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 400;
+    max-width: 400px;
+    margin: 0 auto;
+    color: {{ section.settings.text_color }};
+    opacity: 0.9;
+  }
+  @media (max-width: 768px) {
+    .recognition-grid-{{ section.id }} {
+      gap: 30px;
+    }
+    .recognition-title-{{ section.id }} {
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+    .recognition-desc-{{ section.id }} {
+      font-size: 13px;
+    }
+  }
+</style>
+<div class="recognition-section-{{ section.id }}">
+  <div class="recognition-grid-{{ section.id }}">
+    {% for block in section.blocks %}
+      <div class="recognition-item-{{ section.id }}" {{ block.shopify_attributes }}>
+        {% if block.settings.title != blank %}
+          <h3 class="recognition-title-{{ section.id }}">{{ block.settings.title }}</h3>
+        {% endif %}
+        {% if block.settings.description != blank %}
+          <p class="recognition-desc-{{ section.id }}">{{ block.settings.description }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Recognition Badges",
+  "settings": [
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Top",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding Bottom",
+      "default": 60
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#fcfcf9"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#333333"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "badge",
+      "name": "Recognition Badge",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "PETA recognition"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "We appear on PETA's internationally recognised vegan and cruelty-free lists."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recognition Badges",
+      "blocks": [
+        {
+          "type": "badge",
+          "settings": {
+            "title": "PETA recognition",
+            "description": "We appear on PETA's internationally recognised vegan and cruelty-free lists."
+          }
+        },
+        {
+          "type": "badge",
+          "settings": {
+            "title": "Certified B Corp",
+            "description": "We meet the highest verified standards of social and environmental performance, transparency and accountability."
+          }
+        },
+        {
+          "type": "badge",
+          "settings": {
+            "title": "Leaping Bunny Approved",
+            "description": "Our formulations are approved as cruelty free under the Cruelty Free International Leaping Bunny programme."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

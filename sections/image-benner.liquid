@@ -1,0 +1,374 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<style>
+  #shopify-section-{{ section.id }} {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .aesop-hero-wrapper-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    overflow: hidden;
+  }
+  .aesop-hero-swiper-{{ section.id }} {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  .aesop-hero-swiper-{{ section.id }} .swiper-slide {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  .aesop-hero-swiper-{{ section.id }} .media-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+  .aesop-hero-swiper-{{ section.id }} img,
+  .aesop-hero-swiper-{{ section.id }} video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .aesop-hero-content {
+    position: relative;
+    z-index: 2;
+    margin-top: 45rem;
+    width: 100%;
+    max-width: 900px;
+    padding: 0 20px;
+    text-align: center;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .aesop-hero-subheading {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-family: "Times New Roman", Times, serif;
+    font-style: italic;
+  }
+  .aesop-hero-heading {
+    font-size: 56px;
+    font-weight: 400;
+    font-family: "Times New Roman", Times, serif;
+    line-height: 1.1;
+    margin: 0 0 15px 0;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .aesop-hero-description {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 35px;
+    font-family: sans-serif;
+    max-width: 700px;
+    opacity: 0.95;
+  }
+  .aesop-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: transparent;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-family: sans-serif;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+  }
+  .aesop-hero-btn:hover {
+    background: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+  }
+  .aesop-hero-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    transition: transform 0.3s ease;
+  }
+  .aesop-hero-btn:hover svg {
+    transform: translateX(5px);
+  }
+  .aesop-custom-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    z-index: 50;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    transition: opacity 0.3s ease;
+    opacity: 0.7;
+  }
+  .aesop-custom-nav:hover {
+    opacity: 1;
+  }
+  .aesop-custom-nav svg {
+    width: 32px;
+    height: 32px;
+    stroke: #ffffff;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .aesop-nav-prev {
+    left: 30px;
+  }
+  .aesop-nav-next {
+    right: 30px;
+  }
+  .aesop-hero-swiper-{{ section.id }} .swiper-pagination {
+    bottom: 30px !important;
+    z-index: 20;
+  }
+  .aesop-hero-swiper-{{ section.id }} .swiper-pagination-bullet {
+    width: 40px;
+    height: 2px;
+    border-radius: 0;
+    background: #ffffff;
+    opacity: 0.3;
+    margin: 0 8px;
+    transition: opacity 0.3s;
+  }
+  .aesop-hero-swiper-{{ section.id }} .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: #ffffff;
+  }
+  @media screen and (max-width: 749px) {
+    .aesop-hero-wrapper-{{ section.id }} {
+      height: 85vh;
+    }
+    .aesop-hero-heading {
+      font-size: 32px;
+    }
+    .aesop-hero-description {
+      font-size: 14px;
+    }
+    .aesop-custom-nav {
+      display: none;
+    }
+     .aesop-hero-content{
+    margin-top:21rem;
+    }
+  }
+</style>
+<div class="aesop-hero-wrapper-{{ section.id }}">
+  <div class="swiper aesop-hero-swiper-{{ section.id }}">
+    <div class="swiper-wrapper">
+      {% for block in section.blocks %}
+        <div class="swiper-slide" {{ block.shopify_attributes }}>
+          <div class="media-wrapper">
+            {% if block.type == 'video' %}
+              {% if block.settings.videoDextop != blank %}
+                {{ block.settings.videoDextop | video_tag: autoplay: true, loop: true, muted: true, controls: false, preload: "auto" }}
+              {% endif %}
+            {% elsif block.type == 'image' %}
+              {% if block.settings.imageDextop != blank %}
+                <img src="{{ block.settings.imageDextop | img_url: 'master' }}" alt="{{ block.settings.heading }}" loading="lazy">
+              {% endif %}
+            {% endif %}
+          </div>
+          <div class="aesop-hero-content">
+            {% if block.settings.subheading != blank %}
+              <div class="aesop-hero-subheading">{{ block.settings.subheading }}</div>
+            {% endif %}
+            {% if block.settings.heading != blank %}
+              <h2 class="aesop-hero-heading">{{ block.settings.heading }}</h2>
+            {% endif %}
+            {% if block.settings.description != blank %}
+              <div class="aesop-hero-description">{{ block.settings.description }}</div>
+            {% endif %}
+            {% if block.settings.button_text != blank %}
+              <a href="{{ block.settings.url | default: '#' }}" class="aesop-hero-btn">
+                {{ block.settings.button_text }}
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="swiper-pagination"></div>
+  </div>
+  <div class="aesop-custom-nav aesop-nav-prev">
+    <svg viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </div>
+  <div class="aesop-custom-nav aesop-nav-next">
+    <svg viewBox="0 0 24 24">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Swiper !== 'undefined') {
+      
+      var swiperElement = document.querySelector('.aesop-hero-swiper-{{ section.id }}');
+      var prevBtn = document.querySelector('.aesop-hero-wrapper-{{ section.id }} .aesop-nav-prev');
+      var nextBtn = document.querySelector('.aesop-hero-wrapper-{{ section.id }} .aesop-nav-next');
+
+      if (swiperElement) {
+        var aesopSwiper = new Swiper(swiperElement, {
+          loop: true,
+          speed: 1000,
+          effect: 'fade',
+          fadeEffect: {
+            crossFade: true
+          },
+          autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+          },
+          pagination: {
+            el: '.aesop-hero-swiper-{{ section.id }} .swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: nextBtn,
+            prevEl: prevBtn,
+          },
+          observer: true,
+          observeParents: true,
+          watchSlidesProgress: true,
+        });
+        if(prevBtn) {
+          prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            aesopSwiper.slidePrev();
+          });
+        }
+        if(nextBtn) {
+          nextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            aesopSwiper.slideNext();
+          });
+        }
+      }
+    } else {
+      console.error('Swiper library load nahi hui. Check karein CDN link.');
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Aesop Hero Banner",
+  "settings": [],
+  "blocks": [
+    {
+      "name": "Video Slide",
+      "type": "video",
+      "settings": [
+        {
+          "type": "video",
+          "id": "videoDextop",
+          "label": "Desktop Video"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "Introducing"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "The Fragrant Fables"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "A new chapter for our Eaux de Parfum begins, with aromas rebottled and rewritten."
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text",
+          "default": "Explore the story"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Button Link"
+        }
+      ]
+    },
+    {
+      "name": "Image Slide",
+      "type": "image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "imageDextop",
+          "label": "Desktop Image"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "New Arrivals"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "The Fragrance Finder"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Our aromas are as nuanced as the individuals who wear them."
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button Text",
+          "default": "Follow your nose"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Button Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Aesop Hero Banner"
+    }
+  ]
+}
+{% endschema %}

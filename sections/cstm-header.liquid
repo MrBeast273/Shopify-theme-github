@@ -1,0 +1,1532 @@
+{{ 'header-aesop.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign menu = linklists[section.settings.main_menu]
+
+  assign overlay = false
+  if template.name == 'index' and section.settings.transparent_home
+    assign overlay = true
+  elsif template.name == 'collection' and section.settings.transparent_collection
+    assign overlay = true
+  elsif template.name == 'page' and section.settings.transparent_page
+    assign overlay = true
+  endif
+
+  assign suggestions = section.settings.suggested_searches | newline_to_br | strip_newlines | split: '<br />'
+-%}
+
+<div
+  class="aesop-root"
+  style="
+    --aesop-bg: {{ section.settings.bg_color }};
+    --aesop-text: {{ section.settings.text_color }};
+    --aesop-line: {{ section.settings.line_color }};
+    --aesop-logo-w: {{ section.settings.logo_width }}px;
+  "
+>
+  <div
+    role="banner"
+    class="aesop-header{% unless overlay %} is-solid{% endunless %}"
+    data-aesop-header
+    data-overlay="{{ overlay }}"
+    data-hide-on-scroll="{{ section.settings.hide_on_scroll }}"
+    data-section-id="{{ section.id }}"
+  >
+    <a class="aesop-skip" href="#MainContent">Skip to content</a>
+
+    <div class="aesop-header__top">
+      <div class="aesop-header__group aesop-header__group--start">
+        <button
+          type="button"
+          class="aesop-header__icon-btn aesop-header__menu-toggle"
+          data-drawer-open
+          aria-label="Menu"
+          aria-expanded="false"
+          aria-controls="aesop-drawer-{{ section.id }}"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <line x1="3" y1="7" x2="21" y2="7"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="17" x2="21" y2="17"></line>
+          </svg>
+        </button>
+
+        <a href="{{ section.settings.stores_url | default: '#' }}" class="aesop-header__link is-desktop-only">
+          {{ section.settings.stores_label }}
+        </a>
+        <a href="{{ section.settings.contact_url | default: '#' }}" class="aesop-header__link is-desktop-only">
+          {{ section.settings.contact_label }}
+        </a>
+      </div>
+
+      <div class="aesop-header__logo">
+        <a href="{{ routes.root_url }}" class="aesop-header__logo-link" aria-label="{{ shop.name | escape }}">
+          {%- if section.settings.logo != blank -%}
+            <span class="aesop-header__logo-stack">
+              {%- if section.settings.logo_light != blank -%}
+                {{
+                  section.settings.logo_light
+                  | image_url: width: 420
+                  | image_tag:
+                    class: 'aesop-header__logo-img aesop-header__logo-img--light',
+                    alt: '',
+                    loading: 'eager',
+                    widths: '140, 280, 420',
+                    sizes: '(min-width: 990px) 140px, 100px'
+                }}
+                {{
+                  section.settings.logo
+                  | image_url: width: 420
+                  | image_tag:
+                    class: 'aesop-header__logo-img aesop-header__logo-img--dark',
+                    alt: '',
+                    loading: 'eager',
+                    widths: '140, 280, 420',
+                    sizes: '(min-width: 990px) 140px, 100px'
+                }}
+              {%- else -%}
+                {{
+                  section.settings.logo
+                  | image_url: width: 420
+                  | image_tag:
+                    class: 'aesop-header__logo-img aesop-header__logo-img--auto',
+                    alt: '',
+                    loading: 'eager',
+                    widths: '140, 280, 420',
+                    sizes: '(min-width: 990px) 140px, 100px'
+                }}
+              {%- endif -%}
+            </span>
+          {%- else -%}
+            <span class="aesop-header__logo-text">{{ shop.name }}</span>
+          {%- endif -%}
+        </a>
+      </div>
+
+      <div class="aesop-header__group aesop-header__group--end">
+        <button
+          type="button"
+          class="aesop-header__icon-btn aesop-header__search-icon"
+          data-search-open
+          aria-label="{{ section.settings.search_label | escape }}"
+          aria-expanded="false"
+          aria-controls="aesop-search-{{ section.id }}"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+        </button>
+
+        <a
+          href="{{ section.settings.language_url | default: '#' }}"
+          class="aesop-header__link is-desktop-only"
+          lang="ar"
+          data-language-switcher
+        >
+          {{ section.settings.language_label }}
+        </a>
+
+        <a href="#" class="aesop-header__link is-desktop-only" data-email-signup>
+          {{ section.settings.email_signup_label }}
+        </a>
+
+        <a href="{{ routes.account_url }}" class="aesop-header__link is-desktop-only">
+          {{ section.settings.account_label }}
+        </a>
+
+        <a href="{{ section.settings.cabinet_url | default: routes.account_url }}" class="aesop-header__link is-desktop-only">
+          {{ section.settings.cabinet_label }}
+        </a>
+
+        <a
+          href="{{ routes.cart_url }}"
+          class="aesop-header__link aesop-header__cart-link"
+          data-cart-drawer-open
+          aria-label="{{ section.settings.cart_label | escape }}, {{ cart.item_count }} items"
+        >
+          {{- section.settings.cart_label -}}
+          <span class="aesop-header__cart-count" data-cart-count-wrap{% if cart.item_count == 0 %} hidden{% endif %}>
+            &nbsp;(<span data-cart-count>{{ cart.item_count }}</span>)
+          </span>
+        </a>
+      </div>
+    </div>
+
+    <nav class="aesop-header__nav" aria-label="Main menu">
+      <ul class="aesop-header__nav-list">
+        {%- for link in menu.links -%}
+          {%- liquid
+            assign link_key = link.title | strip | downcase
+            assign card_count = 0
+            for block in section.blocks
+              assign block_key = block.settings.menu_item | strip | downcase
+              if block_key == link_key
+                assign card_count = card_count | plus: 1
+              endif
+            endfor
+            assign col_count = link.links.size | plus: card_count
+          -%}
+
+          <li
+            class="aesop-header__nav-item{% if link.active or link.child_active %} is-active{% endif %}"
+            {% if col_count > 0 %}data-mega-item{% endif %}
+          >
+            <a
+              href="{{ link.url }}"
+              class="aesop-header__nav-link"
+              {% if col_count > 0 %}
+                data-mega-trigger
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="aesop-mega-{{ section.id }}-{{ forloop.index }}"
+              {% endif %}
+              {% if link.current %}aria-current="page"{% endif %}
+            >
+              {{- link.title -}}
+            </a>
+
+            {%- if col_count > 0 -%}
+              <div
+                class="aesop-mega"
+                id="aesop-mega-{{ section.id }}-{{ forloop.index }}"
+                style="--cols: {{ col_count }};"
+              >
+                <div class="aesop-mega__inner">
+                  {%- for group in link.links -%}
+                    <div class="aesop-mega__col">
+                      {%- if group.links.size > 0 -%}
+                        <p class="aesop-mega__heading">{{ group.title }}</p>
+                        <ul class="aesop-mega__list">
+                          {%- for child in group.links -%}
+                            <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- else -%}
+                        <ul class="aesop-mega__list">
+                          <li><a href="{{ group.url }}">{{ group.title }}</a></li>
+                        </ul>
+                      {%- endif -%}
+                    </div>
+                  {%- endfor -%}
+
+                  {%- for block in section.blocks -%}
+                    {%- assign block_key = block.settings.menu_item | strip | downcase -%}
+                    {%- if block_key == link_key -%}
+                      {%- if block.type == 'menu_column' -%}
+                        <div class="aesop-mega__col" {{ block.shopify_attributes }}>
+                          {%- if block.settings.heading != blank -%}
+                            <p class="aesop-mega__heading">{{ block.settings.heading }}</p>
+                          {%- endif -%}
+                          <ul class="aesop-mega__list">
+                            {%- for child in block.settings.links.links -%}
+                              <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+                            {%- endfor -%}
+                          </ul>
+                        </div>
+                      {%- else -%}
+                        <div class="aesop-mega__col" {{ block.shopify_attributes }}>
+                          <a href="{{ block.settings.url | default: link.url }}" class="aesop-mega__card">
+                            <span class="aesop-mega__card-media">
+                              {%- if block.settings.image != blank -%}
+                                {{
+                                  block.settings.image
+                                  | image_url: width: 480
+                                  | image_tag:
+                                    loading: 'lazy',
+                                    widths: '240, 360, 480',
+                                    sizes: '(min-width: 990px) 15vw, 240px',
+                                    alt: block.settings.label,
+                                    class: 'aesop-mega__card-img'
+                                }}
+                              {%- endif -%}
+                            </span>
+                            <span class="aesop-mega__card-label">{{ block.settings.label }}</span>
+                          </a>
+                        </div>
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                </div>
+              </div>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      <div class="aesop-header__search-wrap">
+        <button
+          type="button"
+          class="aesop-header__search-trigger"
+          data-search-open
+          aria-expanded="false"
+          aria-controls="aesop-search-{{ section.id }}"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+          </svg>
+          <span>{{ section.settings.search_label }}</span>
+        </button>
+      </div>
+    </nav>
+
+    <div
+      class="aesop-search"
+      id="aesop-search-{{ section.id }}"
+      data-search-panel
+      aria-hidden="true"
+    >
+      <div class="aesop-search__inner">
+        <form action="{{ routes.search_url }}" method="get" role="search" class="aesop-search__form">
+          <input type="hidden" name="options[prefix]" value="last">
+          <input
+            type="search"
+            name="q"
+            class="aesop-search__input"
+            placeholder="{{ section.settings.search_placeholder | escape }}"
+            aria-label="{{ section.settings.search_placeholder | escape }}"
+            autocomplete="off"
+            data-search-input
+          >
+          <button type="submit" class="aesop-header__icon-btn" aria-label="Search">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+            </svg>
+          </button>
+          <button type="button" class="aesop-search__close" data-search-close>Close</button>
+        </form>
+
+        {%- if suggestions.size > 0 and suggestions.first != blank -%}
+          <div class="aesop-search__suggested" data-search-suggested>
+            <p class="aesop-mega__heading">Suggested</p>
+            <ul class="aesop-mega__list">
+              {%- for term in suggestions -%}
+                {%- assign term_clean = term | strip -%}
+                {%- if term_clean != blank -%}
+                  <li>
+                    <a href="{{ routes.search_url }}?q={{ term_clean | url_encode }}&options[prefix]=last">{{ term_clean }}</a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        <div
+          class="aesop-search__results"
+          data-search-results
+          data-empty-text="No results found"
+          data-all-text="View all results"
+          aria-live="polite"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="aesop-drawer" id="aesop-drawer-{{ section.id }}" data-drawer aria-hidden="true">
+    <div class="aesop-drawer__overlay" data-drawer-close></div>
+    <div class="aesop-drawer__panel" role="dialog" aria-modal="true" aria-label="Menu">
+      <div class="aesop-drawer__head">
+        <button type="button" class="aesop-header__icon-btn" data-drawer-close aria-label="Close menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <line x1="5" y1="5" x2="19" y2="19"></line>
+            <line x1="19" y1="5" x2="5" y2="19"></line>
+          </svg>
+        </button>
+      </div>
+
+      <ul class="aesop-drawer__list">
+        {%- for link in menu.links -%}
+          <li class="aesop-drawer__item">
+            {%- if link.links.size > 0 -%}
+              <button
+                type="button"
+                class="aesop-drawer__accordion"
+                data-accordion-trigger
+                aria-expanded="false"
+                aria-controls="aesop-drawer-panel-{{ section.id }}-{{ forloop.index }}"
+              >
+                {{ link.title }}
+              </button>
+              <div class="aesop-drawer__sub" id="aesop-drawer-panel-{{ section.id }}-{{ forloop.index }}" hidden>
+                <a href="{{ link.url }}" class="aesop-drawer__sub-link aesop-drawer__sub-link--all">{{ link.title }}</a>
+                {%- for group in link.links -%}
+                  {%- if group.links.size > 0 -%}
+                    <p class="aesop-mega__heading">{{ group.title }}</p>
+                    <ul class="aesop-mega__list">
+                      {%- for child in group.links -%}
+                        <li><a href="{{ child.url }}">{{ child.title }}</a></li>
+                      {%- endfor -%}
+                    </ul>
+                  {%- else -%}
+                    <ul class="aesop-mega__list">
+                      <li><a href="{{ group.url }}">{{ group.title }}</a></li>
+                    </ul>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- else -%}
+              <a href="{{ link.url }}" class="aesop-drawer__link">{{ link.title }}</a>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      <div class="aesop-drawer__utility">
+        <a href="{{ section.settings.stores_url | default: '#' }}">{{ section.settings.stores_label }}</a>
+        <a href="{{ section.settings.contact_url | default: '#' }}">{{ section.settings.contact_label }}</a>
+        <a href="{{ routes.account_url }}">{{ section.settings.account_label }}</a>
+        <a href="{{ section.settings.cabinet_url | default: routes.account_url }}">{{ section.settings.cabinet_label }}</a>
+        <a href="#" data-email-signup>{{ section.settings.email_signup_label }}</a>
+        <a href="{{ section.settings.language_url | default: '#' }}" lang="ar">{{ section.settings.language_label }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="aesop-cart-drawer" data-cart-drawer aria-hidden="true">
+    <div class="aesop-cart-drawer__overlay" data-cart-close></div>
+    
+    <div class="aesop-cart-drawer__panel" role="dialog" aria-modal="true" aria-label="Shopping cart">
+      
+      <div class="aesop-cart-drawer__head">
+        <h2 class="aesop-cart-drawer__title">
+          My cart <span data-cart-drawer-count>{% if cart.item_count > 0 %}({{ cart.item_count }}){% endif %}</span>
+        </h2>
+        <button type="button" class="aesop-cart-drawer__close" data-cart-close aria-label="Close cart">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="5" y1="5" x2="19" y2="19"></line>
+            <line x1="19" y1="5" x2="5" y2="19"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="aesop-cart-drawer__body" data-cart-body>
+        {% if cart.item_count == 0 %}
+          <div class="aesop-cart-drawer__empty">
+            <p class="aesop-cart-drawer__empty-text">You have no items in your cart</p>
+            <a href="{{ routes.all_products_collection_url }}" class="aesop-cart-drawer__empty-btn">Continue shopping</a>
+          </div>
+        {% else %}
+          <div class="aesop-cart-drawer__items">
+            {% for item in cart.items %}
+              <div class="aesop-cart-drawer__item" data-cart-item="{{ item.key }}">
+                
+                <div class="aesop-cart-drawer__item-image">
+                  <a href="{{ item.url }}">
+                    <img src="{{ item.image | image_url: width: 150 }}" alt="{{ item.title | escape }}" loading="lazy">
+                  </a>
+                </div>
+
+                <div class="aesop-cart-drawer__item-details">
+                  <a href="{{ item.url }}" class="aesop-cart-drawer__item-title">{{ item.product.title }}</a>
+                  
+                  {%- if item.product.has_only_default_variant == false -%}
+                    <p class="aesop-cart-drawer__item-variant">
+                      Size: {{ item.variant.title }}
+                    </p>
+                  {%- endif -%}
+
+                  <div class="aesop-cart-drawer__item-bottom">
+                    <div class="aesop-cart-drawer__qty">
+                      <button type="button" class="aesop-cart-drawer__qty-btn" data-cart-qty-minus data-key="{{ item.key }}">−</button>
+                      <input type="number" class="aesop-cart-drawer__qty-input" value="{{ item.quantity }}" min="0" data-cart-qty-input data-key="{{ item.key }}" readonly>
+                      <button type="button" class="aesop-cart-drawer__qty-btn" data-cart-qty-plus data-key="{{ item.key }}">+</button>
+                    </div>
+
+                    <div class="aesop-cart-drawer__item-price">
+                      {{ item.final_line_price | money }}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="aesop-cart-drawer__samples">
+            <button type="button" class="aesop-cart-drawer__samples-toggle" data-samples-toggle>
+              <div>
+                <span class="aesop-cart-drawer__samples-title">Add your free Samples</span>
+                <span class="aesop-cart-drawer__samples-sub">You have 0 / 3 samples selected</span>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div class="aesop-cart-drawer__samples-content" data-samples-content hidden>
+              <p class="aesop-cart-drawer__samples-empty">No samples available at this moment.</p>
+            </div>
+          </div>
+
+          <div class="aesop-cart-drawer__footer">
+            <div class="aesop-cart-drawer__subtotal">
+              <span class="aesop-cart-drawer__subtotal-label">Subtotal</span>
+              <span class="aesop-cart-drawer__subtotal-value" data-cart-subtotal>{{ cart.total_price | money }}</span>
+            </div>
+            
+            <p class="aesop-cart-drawer__tax-note">
+              Taxes included. Complimentary <a href="/policies/shipping-policy">Shipping</a> on all orders
+            </p>
+
+            <a href="{{ routes.cart_url }}" class="aesop-cart-drawer__btn aesop-cart-drawer__btn--primary">
+              Go to cart
+            </a>
+            
+            <form action="{{ routes.cart_url }}" method="post" novalidate class="aesop-cart-drawer__checkout-form">
+              <button type="submit" name="checkout" class="aesop-cart-drawer__btn aesop-cart-drawer__btn--secondary">
+                Check out
+              </button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <div class="aesop-modal" data-email-modal aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="aesop-modal-title-{{ section.id }}">
+    <div class="aesop-modal__overlay" data-email-modal-close></div>
+    <div class="aesop-modal__content">
+      <button type="button" class="aesop-modal__close" data-email-modal-close aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="5" y1="5" x2="19" y2="19"></line>
+          <line x1="19" y1="5" x2="5" y2="19"></line>
+        </svg>
+      </button>
+
+      <div class="aesop-modal__media">
+        {% if section.settings.email_modal_image != blank %}
+          {{ section.settings.email_modal_image | image_url: width: 800 | image_tag: class: 'aesop-modal__image', loading: 'lazy' }}
+        {% else %}
+          <div class="aesop-modal__placeholder">
+             {{ 'lifestyle-1' | placeholder_svg_tag: 'aesop-modal__svg' }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="aesop-modal__form-wrap">
+        <h2 class="aesop-modal__title" id="aesop-modal-title-{{ section.id }}">{{ section.settings.email_modal_title }}</h2>
+        <p class="aesop-modal__text">{{ section.settings.email_modal_text }}</p>
+
+        {%- form 'customer', class: 'aesop-modal__form' -%}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+
+          {%- if form.posted_successfully? -%}
+            <div class="aesop-modal__success">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span>Thanks for subscribing</span>
+            </div>
+          {%- endif -%}
+
+          {%- if form.errors -%}
+            <div class="aesop-modal__error">
+              <span>{{ form.errors | default_errors }}</span>
+            </div>
+          {%- endif -%}
+
+          <p class="aesop-modal__label">Subscribe to Aesop communications</p>
+          
+          <input
+            type="email"
+            name="contact[email]"
+            class="aesop-modal__input"
+            placeholder="Email address*"
+            required
+            autocomplete="email"
+            aria-label="Email address"
+          >
+
+          <label class="aesop-modal__checkbox-label">
+            <input type="checkbox" required>
+            <span>{{ section.settings.email_modal_consent }}</span>
+          </label>
+
+          <button type="submit" class="aesop-modal__button">Submit</button>
+        {%- endform -%}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{{ 'header-aesop.js' | asset_url }}" defer></script>
+
+<style>
+  .aesop-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .aesop-modal.is-open {
+    display: flex;
+  }
+
+  .aesop-modal__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+  }
+
+  .aesop-modal__content {
+    position: relative;
+    background: #FBFBF9;
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    overflow: hidden;
+    margin: 20px;
+    max-height: 90vh;
+  }
+
+  .aesop-modal__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 10;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    padding: 5px;
+    transition: opacity 0.2s;
+  }
+  .aesop-modal__close:hover { opacity: 0.6; }
+
+  .aesop-modal__media {
+    position: relative;
+    background: #e8e5dc;
+    min-height: 500px;
+  }
+  .aesop-modal__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .aesop-modal__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+  .aesop-modal__svg { width: 50%; height: 50%; opacity: 0.4; }
+
+  .aesop-modal__form-wrap {
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+  }
+
+  .aesop-modal__title {
+    font-family: "Zapf Humanist", "Optima", "Georgia", serif;
+    font-size: 32px;
+    font-weight: 300;
+    margin: 0 0 16px 0;
+    color: #222;
+    line-height: 1.2;
+  }
+
+  .aesop-modal__text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #444;
+    margin: 0 0 30px 0;
+  }
+
+  .aesop-modal__label {
+    font-size: 14px;
+    color: #333;
+    margin: 0 0 10px 0;
+    font-weight: 400;
+  }
+
+  .aesop-modal__input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 14px;
+    color: #333;
+    margin-bottom: 20px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .aesop-modal__input:focus {
+    border-color: #333;
+  }
+  .aesop-modal__input::placeholder {
+    color: #999;
+  }
+
+  .aesop-modal__checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #444;
+    margin-bottom: 24px;
+    cursor: pointer;
+  }
+  .aesop-modal__checkbox-label input {
+    margin-top: 3px;
+    accent-color: #333;
+    width: 16px;
+    height: 16px;
+  }
+
+  .aesop-modal__button {
+    background: #222;
+    color: #fff;
+    border: none;
+    padding: 14px 30px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    width: fit-content;
+    transition: opacity 0.2s;
+  }
+  .aesop-modal__button:hover {
+    opacity: 0.85;
+  }
+
+  .aesop-modal__success {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .aesop-modal__error {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 749px) {
+    .aesop-modal__content {
+      grid-template-columns: 1fr;
+      max-height: 95vh;
+      margin: 10px;
+    }
+    .aesop-modal__media {
+      min-height: 250px;
+      height: 250px;
+    }
+    .aesop-modal__form-wrap {
+      padding: 30px 24px;
+    }
+    .aesop-modal__title {
+      font-size: 26px;
+    }
+  }
+
+  .aesop-cart-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .aesop-cart-drawer.is-open {
+    display: block;
+  }
+
+  .aesop-cart-drawer__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(1px);
+  }
+
+  .aesop-cart-drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 440px;
+    background: #FBFBF9;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 30px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .aesop-cart-drawer.is-open .aesop-cart-drawer__panel {
+    transform: translateX(0);
+  }
+
+  .aesop-cart-drawer__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #E5E3DC;
+  }
+
+  .aesop-cart-drawer__title {
+    font-family: "Zapf Humanist", "Optima", "Georgia", serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    padding: 4px;
+    transition: opacity 0.2s;
+  }
+  .aesop-cart-drawer__close:hover { opacity: 0.6; }
+
+  .aesop-cart-drawer__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .aesop-cart-drawer__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .aesop-cart-drawer__empty-text {
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #333;
+    margin: 0 0 24px 0;
+  }
+
+  .aesop-cart-drawer__empty-btn {
+    display: block;
+    width: 100%;
+    background: #4A4A4A;
+    color: #fff;
+    text-decoration: none;
+    padding: 16px;
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: opacity 0.2s;
+  }
+  .aesop-cart-drawer__empty-btn:hover { opacity: 0.85; }
+
+  .aesop-cart-drawer__items {
+    flex: 1;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .aesop-cart-drawer__item {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #F3F2EC;
+    position: relative;
+  }
+
+  .aesop-cart-drawer__item-image {
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .aesop-cart-drawer__item-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+
+  .aesop-cart-drawer__item-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aesop-cart-drawer__item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    text-decoration: none;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .aesop-cart-drawer__item-variant {
+    font-size: 13px;
+    color: #555;
+    margin: 0 0 12px 0;
+  }
+
+  .aesop-cart-drawer__item-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+
+  .aesop-cart-drawer__qty {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+
+  .aesop-cart-drawer__qty-btn {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 36px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .aesop-cart-drawer__qty-btn:hover { background: #f0f0f0; }
+
+  .aesop-cart-drawer__qty-input {
+    width: 36px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    font-size: 14px;
+    background: transparent;
+    color: #222;
+    -moz-appearance: textfield;
+  }
+  .aesop-cart-drawer__qty-input::-webkit-outer-spin-button,
+  .aesop-cart-drawer__qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .aesop-cart-drawer__item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__samples {
+    border-top: 1px solid #E5E3DC;
+    border-bottom: 1px solid #E5E3DC;
+  }
+
+  .aesop-cart-drawer__samples-toggle {
+    width: 100%;
+    background: #F3F2EC;
+    border: none;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+  }
+  .aesop-cart-drawer__samples-toggle:hover { background: #ECEAE2; }
+
+  .aesop-cart-drawer__samples-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 4px;
+  }
+
+  .aesop-cart-drawer__samples-sub {
+    display: block;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .aesop-cart-drawer__samples-content {
+    padding: 16px 24px;
+    background: #FBFBF9;
+  }
+  .aesop-cart-drawer__samples-empty {
+    font-size: 13px;
+    color: #777;
+    margin: 0;
+  }
+
+  .aesop-cart-drawer__footer {
+    padding: 20px 24px 24px;
+    background: #FBFBF9;
+    border-top: 1px solid #E5E3DC;
+  }
+
+  .aesop-cart-drawer__subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .aesop-cart-drawer__subtotal-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__subtotal-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__tax-note {
+    font-size: 12px;
+    color: #555;
+    margin: 0 0 20px 0;
+    line-height: 1.4;
+  }
+  .aesop-cart-drawer__tax-note a {
+    color: #222;
+    text-decoration: underline;
+  }
+
+  .aesop-cart-drawer__btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .aesop-cart-drawer__btn--primary {
+    background: #4A4A4A;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .aesop-cart-drawer__btn--primary:hover { opacity: 0.85; }
+
+  .aesop-cart-drawer__btn--secondary {
+    background: #fff;
+    color: #222;
+    border: 1px solid #ccc;
+  }
+  .aesop-cart-drawer__btn--secondary:hover { background: #F3F2EC; }
+
+  .aesop-cart-drawer__checkout-form {
+    margin: 0;
+  }
+
+  @media (max-width: 500px) {
+    .aesop-cart-drawer__panel {
+      max-width: 100%;
+    }
+    .aesop-cart-drawer__head,
+    .aesop-cart-drawer__items,
+    .aesop-cart-drawer__footer {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .aesop-cart-drawer__samples-toggle {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.querySelector('.aesop-modal');
+    const openTriggers = document.querySelectorAll('[data-email-signup]');
+    const closeTriggers = document.querySelectorAll('[data-email-modal-close]');
+
+    if (modal) {
+      openTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+          e.preventDefault();
+          modal.classList.add('is-open');
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        });
+      });
+
+      closeTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function() {
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        });
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+
+    const cartDrawer = document.querySelector('[data-cart-drawer]');
+    const cartOpenBtns = document.querySelectorAll('[data-cart-drawer-open]');
+    const cartCloseBtns = document.querySelectorAll('[data-cart-close]');
+
+    if (cartDrawer) {
+      cartOpenBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          cartDrawer.classList.add('is-open');
+          cartDrawer.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        });
+      });
+
+      cartCloseBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          cartDrawer.classList.remove('is-open');
+          cartDrawer.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        });
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && cartDrawer.classList.contains('is-open')) {
+          cartDrawer.classList.remove('is-open');
+          cartDrawer.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        }
+      });
+
+      cartDrawer.querySelectorAll('[data-cart-qty-plus]').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const key = this.dataset.key;
+          const input = cartDrawer.querySelector(`[data-cart-qty-input][data-key="${key}"]`);
+          updateCartItem(key, parseInt(input.value) + 1);
+        });
+      });
+
+      cartDrawer.querySelectorAll('[data-cart-qty-minus]').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const key = this.dataset.key;
+          const input = cartDrawer.querySelector(`[data-cart-qty-input][data-key="${key}"]`);
+          updateCartItem(key, Math.max(0, parseInt(input.value) - 1));
+        });
+      });
+
+      function updateCartItem(key, quantity) {
+        fetch('/cart/change.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ id: key, quantity: quantity })
+        })
+        .then(res => res.json())
+        .then(cart => {
+          refreshCartDrawer(cart);
+          document.dispatchEvent(new CustomEvent('cart:updated'));
+          window.dispatchEvent(new CustomEvent('cart:updated'));
+        })
+        .catch(err => console.error('Cart update error:', err));
+      }
+
+      function refreshCartDrawer(cart) {
+        document.querySelectorAll('[data-cart-count]').forEach(el => el.textContent = cart.item_count);
+        document.querySelectorAll('[data-cart-count-wrap]').forEach(el => {
+          el.hidden = cart.item_count === 0;
+        });
+        document.querySelectorAll('[data-cart-drawer-count]').forEach(el => {
+          el.textContent = cart.item_count > 0 ? `(${cart.item_count})` : '';
+        });
+
+        const body = cartDrawer.querySelector('[data-cart-body]');
+        if (cart.item_count === 0) {
+          body.innerHTML = `
+            <div class="aesop-cart-drawer__empty">
+              <p class="aesop-cart-drawer__empty-text">You have no items in your cart</p>
+              <a href="/collections/all" class="aesop-cart-drawer__empty-btn">Continue shopping</a>
+            </div>`;
+        } else {
+          let itemsHtml = '<div class="aesop-cart-drawer__items">';
+          cart.items.forEach(item => {
+            itemsHtml += `
+              <div class="aesop-cart-drawer__item" data-cart-item="${item.key}">
+                <div class="aesop-cart-drawer__item-image">
+                  <a href="${item.url}">
+                    <img src="${item.image}" alt="${item.title}" loading="lazy">
+                  </a>
+                </div>
+                <div class="aesop-cart-drawer__item-details">
+                  <a href="${item.url}" class="aesop-cart-drawer__item-title">${item.product_title}</a>
+                  ${item.variant_title && item.variant_title !== 'Default Title' ? `<p class="aesop-cart-drawer__item-variant">Size: ${item.variant_title}</p>` : ''}
+                  <div class="aesop-cart-drawer__item-bottom">
+                    <div class="aesop-cart-drawer__qty">
+                      <button type="button" class="aesop-cart-drawer__qty-btn" data-cart-qty-minus data-key="${item.key}">−</button>
+                      <input type="number" class="aesop-cart-drawer__qty-input" value="${item.quantity}" min="0" data-cart-qty-input data-key="${item.key}" readonly>
+                      <button type="button" class="aesop-cart-drawer__qty-btn" data-cart-qty-plus data-key="${item.key}">+</button>
+                    </div>
+                    <div class="aesop-cart-drawer__item-price">${formatMoney(item.final_line_price)}</div>
+                  </div>
+                </div>
+              </div>`;
+          });
+          itemsHtml += '</div>';
+
+          const footerHtml = `
+            <div class="aesop-cart-drawer__samples">
+              <button type="button" class="aesop-cart-drawer__samples-toggle" data-samples-toggle>
+                <div>
+                  <span class="aesop-cart-drawer__samples-title">Add your free Samples</span>
+                  <span class="aesop-cart-drawer__samples-sub">You have 0 / 3 samples selected</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+              <div class="aesop-cart-drawer__samples-content" data-samples-content hidden>
+                <p class="aesop-cart-drawer__samples-empty">No samples available at this moment.</p>
+              </div>
+            </div>
+            <div class="aesop-cart-drawer__footer">
+              <div class="aesop-cart-drawer__subtotal">
+                <span class="aesop-cart-drawer__subtotal-label">Subtotal</span>
+                <span class="aesop-cart-drawer__subtotal-value">${formatMoney(cart.total_price)}</span>
+              </div>
+              <p class="aesop-cart-drawer__tax-note">
+                Taxes included. Complimentary <a href="/policies/shipping-policy">Shipping</a> on all orders
+              </p>
+              <a href="/cart" class="aesop-cart-drawer__btn aesop-cart-drawer__btn--primary">Go to cart</a>
+              <form action="/cart" method="post" novalidate class="aesop-cart-drawer__checkout-form">
+                <button type="submit" name="checkout" class="aesop-cart-drawer__btn aesop-cart-drawer__btn--secondary">Check out</button>
+              </form>
+            </div>`;
+
+          body.innerHTML = itemsHtml + footerHtml;
+
+          body.querySelectorAll('[data-cart-qty-plus]').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const input = body.querySelector(`[data-cart-qty-input][data-key="${this.dataset.key}"]`);
+              updateCartItem(this.dataset.key, parseInt(input.value) + 1);
+            });
+          });
+          body.querySelectorAll('[data-cart-qty-minus]').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const input = body.querySelector(`[data-cart-qty-input][data-key="${this.dataset.key}"]`);
+              updateCartItem(this.dataset.key, Math.max(0, parseInt(input.value) - 1));
+            });
+          });
+        }
+      }
+
+      function formatMoney(cents) {
+        return 'AED ' + (cents / 100).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+
+      document.addEventListener('click', function(e) {
+        const toggle = e.target.closest('[data-samples-toggle]');
+        if (toggle) {
+          const content = toggle.nextElementSibling;
+          if (content) content.hidden = !content.hidden;
+        }
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Header (Aesop)",
+  "tag": "div",
+  "class": "aesop-header-section",
+  "max_blocks": 16,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo (dark version)",
+      "info": "Shown on the off-white header. If you don't upload a light logo below, this one is automatically turned white while the header is transparent."
+    },
+    {
+      "type": "image_picker",
+      "id": "logo_light",
+      "label": "Logo (light version, optional)",
+      "info": "Shown while the header is transparent over the hero."
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width",
+      "min": 80,
+      "max": 240,
+      "step": 4,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "header",
+      "content": "Behaviour"
+    },
+    {
+      "type": "checkbox",
+      "id": "transparent_home",
+      "label": "Transparent over hero on the homepage",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "transparent_collection",
+      "label": "Transparent over hero on collection pages",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "transparent_page",
+      "label": "Transparent over hero on pages",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_on_scroll",
+      "label": "Hide header on scroll down, show on scroll up",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Colours"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Off-white background",
+      "default": "#FFFEF2"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text (solid state)",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "line_color",
+      "label": "Divider lines",
+      "default": "#EFEEE3"
+    },
+    {
+      "type": "header",
+      "content": "Utility links"
+    },
+    {
+      "type": "text",
+      "id": "stores_label",
+      "label": "Stores label",
+      "default": "Stores"
+    },
+    {
+      "type": "url",
+      "id": "stores_url",
+      "label": "Stores link"
+    },
+    {
+      "type": "text",
+      "id": "contact_label",
+      "label": "Contact label",
+      "default": "Contact us"
+    },
+    {
+      "type": "url",
+      "id": "contact_url",
+      "label": "Contact link"
+    },
+    {
+      "type": "text",
+      "id": "language_label",
+      "label": "Language label",
+      "default": "العربية"
+    },
+    {
+      "type": "url",
+      "id": "language_url",
+      "label": "Language link"
+    },
+    {
+      "type": "text",
+      "id": "email_signup_label",
+      "label": "Email sign up label",
+      "default": "Email sign up"
+    },
+    {
+      "type": "text",
+      "id": "account_label",
+      "label": "Account label",
+      "default": "Account"
+    },
+    {
+      "type": "text",
+      "id": "cabinet_label",
+      "label": "Cabinet label",
+      "default": "Cabinet"
+    },
+    {
+      "type": "url",
+      "id": "cabinet_url",
+      "label": "Cabinet link"
+    },
+    {
+      "type": "text",
+      "id": "cart_label",
+      "label": "Cart label",
+      "default": "Cart"
+    },
+    {
+      "type": "header",
+      "content": "Main navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "main_menu",
+      "label": "Main menu",
+      "default": "main-menu",
+      "info": "Level 1 = nav links, level 2 = mega menu column headings, level 3 = links in each column."
+    },
+    {
+      "type": "header",
+      "content": "Search"
+    },
+    {
+      "type": "text",
+      "id": "search_label",
+      "label": "Search button label",
+      "default": "Search..."
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search input placeholder",
+      "default": "I'm looking for..."
+    },
+    {
+      "type": "textarea",
+      "id": "suggested_searches",
+      "label": "Suggested searches",
+      "info": "One per line.",
+      "default": "cleansers\nhydrators\ngifts"
+    },
+    {
+      "type": "header",
+      "content": "Email sign up modal"
+    },
+    {
+      "type": "image_picker",
+      "id": "email_modal_image",
+      "label": "Modal Left Image"
+    },
+    {
+      "type": "text",
+      "id": "email_modal_title",
+      "label": "Title",
+      "default": "Subscribe to stay in-the-know"
+    },
+    {
+      "type": "textarea",
+      "id": "email_modal_text",
+      "label": "Description",
+      "default": "Enter your details to receive communications about our products and services, events, and cultural endeavours."
+    },
+    {
+      "type": "textarea",
+      "id": "email_modal_consent",
+      "label": "Consent Text",
+      "default": "I consent to receive occasional marketing communications and event invitations from Mizzen General Trading, its affiliates, and group companies via phone, email, SMS, or WhatsApp channels"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu_column",
+      "name": "Mega menu column",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Show under this menu item",
+          "info": "Must match a top-level item in your main menu, e.g. Skin Care. Use this if your menu has no nested items."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Column heading",
+          "default": "Category"
+        },
+        {
+          "type": "link_list",
+          "id": "links",
+          "label": "Links in this column",
+          "info": "Pick a menu. Its links become the list under the heading."
+        }
+      ]
+    },
+    {
+      "type": "menu_card",
+      "name": "Mega menu image card",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Show under this menu item",
+          "info": "Must match a top-level item in your main menu, e.g. Skin Care."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Discover"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Header (Aesop)",
+      "category": "Header"
+    }
+  ]
+}
+{% endschema %}

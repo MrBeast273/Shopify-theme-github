@@ -1,0 +1,331 @@
+{% liquid
+  assign section_id = 'editorial-showcase-' | append: section.id
+  assign desktop_video = section.settings.desktop_video
+  assign mobile_video = section.settings.mobile_video
+  assign section_height = section.settings.section_height | append: 'px'
+  assign mobile_height = section.settings.mobile_height | append: 'px'
+%}
+
+<section id="{{ section_id }}" class="editorial-showcase" style="--showcase-height: {{ section_height }}; --showcase-mobile-height: {{ mobile_height }}; --showcase-width: {{ section.settings.desktop_layout_width }}%; --showcase-bg: {{ section.settings.background_color }}; --showcase-text: {{ section.settings.text_color }}; --showcase-overlay: {{ section.settings.video_overlay | divided_by: 100.0 }}; --showcase-gap: {{ section.settings.product_spacing }}px; --showcase-tab-gap: {{ section.settings.tab_spacing }}px;">
+  <div class="editorial-showcase__video-panel">
+    {% if desktop_video != blank or section.settings.fallback_image != blank %}
+      <a class="editorial-showcase__video-link" href="{% if section.settings.video_link != blank %}{{ section.settings.video_link }}{% else %}#{% endif %}"{% if section.settings.video_link == blank %} aria-disabled="true"{% endif %}>
+        {% if desktop_video != blank %}
+          {{ desktop_video | video_tag: class: 'editorial-showcase__video editorial-showcase__video--desktop', autoplay: section.settings.video_autoplay, loop: section.settings.video_loop, muted: true, controls: false, playsinline: true, image_size: '1600x' }}
+        {% endif %}
+        {% if mobile_video != blank %}
+          {{ mobile_video | video_tag: class: 'editorial-showcase__video editorial-showcase__video--mobile', autoplay: section.settings.video_autoplay, loop: section.settings.video_loop, muted: true, controls: false, playsinline: true, image_size: '1000x' }}
+        {% endif %}
+        {% if section.settings.fallback_image != blank %}
+          {{ section.settings.fallback_image | image_url: width: 1800 | image_tag: class: 'editorial-showcase__fallback', loading: 'lazy', widths: '600, 900, 1200, 1600, 1800', sizes: '50vw', alt: section.settings.fallback_image.alt | escape }}
+        {% endif %}
+        <span class="editorial-showcase__veil" aria-hidden="true"></span>
+      </a>
+    {% else %}
+      <div class="editorial-showcase__empty-video" aria-hidden="true"></div>
+    {% endif %}
+    {% if section.settings.show_video_controls and desktop_video != blank or section.settings.show_video_controls and mobile_video != blank %}
+      <button class="editorial-showcase__video-toggle" type="button" aria-label="Pause video" data-video-toggle>
+        <span class="editorial-showcase__pause-icon" aria-hidden="true"></span>
+        <span class="editorial-showcase__play-icon" aria-hidden="true"></span>
+      </button>
+    {% endif %}
+    {% if section.settings.media_eyebrow != blank or section.settings.media_heading != blank or section.settings.media_description != blank or section.settings.media_button_text != blank %}
+      <div class="editorial-showcase__media-copy">
+        {% if section.settings.media_eyebrow != blank %}<p class="editorial-showcase__media-eyebrow">{{ section.settings.media_eyebrow }}</p>{% endif %}
+        {% if section.settings.media_heading != blank %}<h2 class="editorial-showcase__media-heading">{{ section.settings.media_heading }}</h2>{% endif %}
+        {% if section.settings.media_description != blank %}<div class="editorial-showcase__media-description">{{ section.settings.media_description }}</div>{% endif %}
+        {% if section.settings.media_button_text != blank %}
+          <a class="editorial-showcase__media-button" href="{% if section.settings.media_button_link != blank %}{{ section.settings.media_button_link }}{% else %}#{% endif %}"{% if section.settings.media_button_link == blank %} aria-disabled="true"{% endif %}>{{ section.settings.media_button_text }}<span aria-hidden="true">→</span></a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="editorial-showcase__product-panel">
+    <div class="editorial-showcase__intro">
+      {% if section.settings.eyebrow != blank %}<p class="editorial-showcase__eyebrow">{{ section.settings.eyebrow }}</p>{% endif %}
+      {% if section.settings.heading != blank %}<h2 class="editorial-showcase__heading editorial-showcase__heading--{{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>{% endif %}
+      {% if section.settings.description != blank %}<div class="editorial-showcase__description">{{ section.settings.description }}</div>{% endif %}
+    </div>
+
+    {% if section.blocks.size > 0 %}
+      <div class="editorial-showcase__tabs" role="tablist" aria-label="Product categories">
+        {% assign first_visible_tab = true %}
+        {% for block in section.blocks %}
+          {% if block.settings.visible %}
+            <button class="editorial-showcase__tab{% if first_visible_tab %} is-active{% endif %}" id="{{ section_id }}-tab-{{ block.id }}" type="button" role="tab" aria-controls="{{ section_id }}-panel-{{ block.id }}" aria-selected="{% if first_visible_tab %}true{% else %}false{% endif %}" tabindex="{% if first_visible_tab %}0{% else %}-1{% endif %}" data-tab-target="{{ block.id }}" {{ block.shopify_attributes }}>{{ block.settings.title }}</button>
+            {% assign first_visible_tab = false %}
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div class="editorial-showcase__panels">
+        {% assign first_visible_panel = true %}
+        {% for block in section.blocks %}
+          {% if block.settings.visible %}
+            <div class="editorial-showcase__panel{% if first_visible_panel %} is-active{% endif %}" id="{{ section_id }}-panel-{{ block.id }}" role="tabpanel" aria-labelledby="{{ section_id }}-tab-{{ block.id }}"{% unless first_visible_panel %} hidden{% endunless %} data-panel="{{ block.id }}">
+              {% liquid
+                assign selected_products = block.settings.products
+                if block.settings.collection != blank
+                  assign selected_products = block.settings.collection.products
+                endif
+              %}
+              {% if selected_products != blank %}
+                <div class="editorial-showcase__carousel" data-carousel>
+                  <div class="editorial-showcase__track" data-carousel-track>
+                    {% for product in selected_products limit: section.settings.product_card_count %}
+                      <article class="editorial-showcase__card" data-carousel-slide>
+                        <div class="editorial-showcase__card-media">
+                          {% if section.settings.show_wishlist %}
+                            <button class="editorial-showcase__wishlist" type="button" aria-label="Add {{ product.title | escape }} to wishlist" aria-pressed="false" data-wishlist data-product-handle="{{ product.handle }}" data-product-id="{{ product.id }}">
+                              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.9c0 5.2-8.8 10.1-8.8 10.1S3.2 14.1 3.2 8.9A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.8 2.6Z"></path></svg>
+                            </button>
+                          {% endif %}
+                          <a href="{{ product.url }}" class="editorial-showcase__product-link" aria-label="View {{ product.title | escape }}">
+                            {% if product.featured_image != blank %}
+                              {{ product.featured_image | image_url: width: 900 | image_tag: class: 'editorial-showcase__product-image', loading: 'lazy', widths: '320, 500, 700, 900', sizes: '(min-width: 990px) 18vw, (min-width: 750px) 30vw, 80vw', alt: product.featured_image.alt | default: product.title | escape }}
+                            {% else %}
+                              {{ 'product-1' | placeholder_svg_tag: 'editorial-showcase__product-image editorial-showcase__product-image--placeholder' }}
+                            {% endif %}
+                          </a>
+                        </div>
+                        <div class="editorial-showcase__card-content">
+                          <a href="{{ product.url }}" class="editorial-showcase__product-title">{{ product.title }}</a>
+                          {% if section.settings.show_product_description %}
+                            {% assign short_description = product.metafields.custom.short_description | default: product.description | strip_html | truncate: 60 %}
+                            {% if short_description != blank %}<p class="editorial-showcase__product-description">{{ short_description }}</p>{% endif %}
+                          {% endif %}
+                          {% if section.settings.show_price %}
+                            <p class="editorial-showcase__price">
+                              <span>{{ product.price | money }}</span>
+                              {% if product.compare_at_price > product.price %}<s>{{ product.compare_at_price | money }}</s>{% endif %}
+                            </p>
+                          {% endif %}
+                        </div>
+                      </article>
+                    {% endfor %}
+                  </div>
+                  {% if section.settings.show_carousel_arrows %}
+                    <button class="editorial-showcase__arrow editorial-showcase__arrow--previous" type="button" aria-label="Previous products" data-carousel-previous>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+                    </button>
+                    <button class="editorial-showcase__arrow editorial-showcase__arrow--next" type="button" aria-label="Next products" data-carousel-next>
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+                    </button>
+                  {% endif %}
+                </div>
+                {% if section.settings.show_pagination %}<div class="editorial-showcase__pagination" data-carousel-pagination aria-label="Product carousel pagination"></div>{% endif %}
+              {% else %}
+                <p class="editorial-showcase__empty-products">Select a collection or products for this tab.</p>
+              {% endif %}
+            </div>
+            {% assign first_visible_panel = false %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="editorial-showcase__empty-products">Add category tabs to begin.</p>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+  #{{ section_id }} { background: var(--showcase-bg); color: var(--showcase-text); display: grid; grid-template-columns: var(--showcase-width) 1fr; min-height: var(--showcase-height); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  #{{ section_id }} * { box-sizing: border-box; }
+  #{{ section_id }} a { color: inherit; text-decoration: none; }
+  #{{ section_id }} button, #{{ section_id }} select { font: inherit; }
+
+  /* Left Panel Styling */
+  #{{ section_id }} .editorial-showcase__video-panel { min-height: var(--showcase-height); position: relative; background: #221e1a; }
+  #{{ section_id }} .editorial-showcase__video-link, #{{ section_id }} .editorial-showcase__video, #{{ section_id }} .editorial-showcase__fallback { display: block; height: 100%; inset: 0; object-fit: cover; object-position: {{ section.settings.video_position }}; position: absolute; width: 100%; }
+  #{{ section_id }} .editorial-showcase__video--mobile { display: none; }
+  #{{ section_id }} .editorial-showcase__fallback { z-index: 0; }
+  #{{ section_id }} .editorial-showcase__video { z-index: 1; }
+  #{{ section_id }} .editorial-showcase__veil { background: rgba(0,0,0,0.25); inset: 0; position: absolute; z-index: 2; }
+  #{{ section_id }} .editorial-showcase__empty-video { height: 100%; min-height: var(--showcase-height); }
+  
+  #{{ section_id }} .editorial-showcase__media-copy { bottom: 40px; color: #ffffff; left: 40px; max-width: 420px; position: absolute; z-index: 3; text-align: left; }
+  #{{ section_id }} .editorial-showcase__media-eyebrow { font-size: 12px; letter-spacing: 0.05em; line-height: 1.4; margin: 0 0 10px; opacity: 0.85; }
+  #{{ section_id }} .editorial-showcase__media-heading { font-family: "Georgia", "Times New Roman", serif; font-size: 26px; font-weight: 300; line-height: 1.25; margin: 0; letter-spacing: -0.01em; }
+  #{{ section_id }} .editorial-showcase__media-description { font-size: 12px; line-height: 1.6; margin-top: 12px; opacity: 0.8; font-weight: 300; }
+  #{{ section_id }} .editorial-showcase__media-button { align-items: center; border: 1px solid rgba(255,255,255,0.4); display: inline-flex; font-size: 12px; gap: 16px; margin-top: 24px; height: 38px; padding: 0 16px; text-decoration: none; transition: all 0.2s ease; background: rgba(0,0,0,0.2); }
+  #{{ section_id }} .editorial-showcase__media-button span { font-size: 14px; }
+  #{{ section_id }} .editorial-showcase__media-button:hover { background: #ffffff; color: #000000; border-color: #ffffff; }
+
+  /* Right Panel Styling */
+  #{{ section_id }} .editorial-showcase__product-panel { align-self: center; min-width: 0; padding: 60px 50px; text-align: center; }
+  #{{ section_id }} .editorial-showcase__intro { margin: 0 auto 28px; max-width: 500px; text-align: center; }
+  #{{ section_id }} .editorial-showcase__eyebrow { font-size: 12px; letter-spacing: 0.02em; line-height: 1.4; margin: 0 0 12px; opacity: 0.75; }
+  #{{ section_id }} .editorial-showcase__heading { font-family: "Georgia", "Times New Roman", serif; font-weight: 300; letter-spacing: -0.01em; line-height: 1.2; margin: 0; color: #23201d; }
+  #{{ section_id }} .editorial-showcase__heading--small { font-size: 28px; }
+  #{{ section_id }} .editorial-showcase__heading--medium { font-size: 34px; }
+  #{{ section_id }} .editorial-showcase__heading--large { font-size: 42px; }
+  #{{ section_id }} .editorial-showcase__description { font-size: 13px; line-height: 1.6; margin: 12px auto 0; max-width: 420px; opacity: 0.8; }
+  
+  /* Tabs */
+  #{{ section_id }} .editorial-showcase__tabs { align-items: center; justify-content: center; display: flex; gap: 24px; margin: 0 auto 40px; border-bottom: none; }
+  #{{ section_id }} .editorial-showcase__tab { background: transparent; border: 0; border-bottom: 1px solid transparent; color: #23201d; cursor: pointer; font-size: 13px; font-weight: 400; padding: 0 0 4px; text-transform: capitalize; opacity: 0.6; transition: all 0.2s ease; }
+  #{{ section_id }} .editorial-showcase__tab.is-active { opacity: 1; border-color: #23201d; }
+
+  /* Product Grid / Cards */
+  #{{ section_id }} .editorial-showcase__panel { margin: 0 auto; max-width: 760px; position: relative; }
+  #{{ section_id }} .editorial-showcase__panel[hidden] { display: none; }
+  #{{ section_id }} .editorial-showcase__carousel { min-width: 0; overflow: hidden; position: relative; }
+  #{{ section_id }} .editorial-showcase__track { display: flex; gap: var(--showcase-gap); touch-action: pan-y; transition: transform .45s ease; }
+  #{{ section_id }} .editorial-showcase__card { flex: 0 0 calc((100% - (var(--showcase-gap) * 2)) / {{ section.settings.products_per_row }}); min-width: 0; text-align: center; }
+  #{{ section_id }} .editorial-showcase__card-media { aspect-ratio: 4 / 5; background: transparent; position: relative; display: flex; align-items: center; justify-content: center; }
+  #{{ section_id }} .editorial-showcase__product-link { display: flex; align-items: center; justify-content: center; height: 100%; width: 100%; }
+  #{{ section_id }} .editorial-showcase__product-image { height: auto; max-height: 85%; object-fit: contain; width: auto; mix-blend-mode: multiply; }
+  
+  /* Wishlist Heart Icon */
+  #{{ section_id }} .editorial-showcase__wishlist { background: transparent; border: 0; color: #23201d; cursor: pointer; display: flex; height: 28px; width: 28px; align-items: center; justify-content: center; padding: 0; position: absolute; right: 4px; top: 0px; z-index: 2; opacity: 0.65; }
+  #{{ section_id }} .editorial-showcase__wishlist:hover { opacity: 1; }
+  #{{ section_id }} .editorial-showcase__wishlist svg { fill: transparent; height: 15px; stroke: currentColor; stroke-width: 1.2; width: 15px; }
+  #{{ section_id }} .editorial-showcase__wishlist[aria-pressed="true"] svg { fill: currentColor; }
+
+  /* Card Typography */
+  #{{ section_id }} .editorial-showcase__card-content { padding-top: 14px; text-align: center; }
+  #{{ section_id }} .editorial-showcase__product-title { display: block; font-family: "Georgia", "Times New Roman", serif; font-size: 13px; line-height: 1.3; color: #23201d; font-weight: 400; }
+  #{{ section_id }} .editorial-showcase__product-description { font-size: 11px; line-height: 1.4; margin: 4px 0 0; color: #666; font-weight: 300; }
+  #{{ section_id }} .editorial-showcase__price { font-size: 11px; margin: 6px 0 0; color: #333; font-weight: 400; letter-spacing: 0.02em; }
+
+  /* Carousel Navigation Arrows */
+  #{{ section_id }} .editorial-showcase__arrow { align-items: center; background: transparent; border: none; color: #23201d; cursor: pointer; display: flex; height: 30px; justify-content: center; padding: 0; position: absolute; top: 35%; width: 30px; z-index: 2; opacity: 0.5; }
+  #{{ section_id }} .editorial-showcase__arrow:hover { opacity: 1; }
+  #{{ section_id }} .editorial-showcase__arrow--previous { left: -15px; }
+  #{{ section_id }} .editorial-showcase__arrow--next { right: -15px; }
+  #{{ section_id }} .editorial-showcase__arrow svg { fill: none; height: 16px; stroke: currentColor; stroke-width: 1.2; width: 16px; }
+
+  @media screen and (max-width: 989px) {
+    #{{ section_id }} { grid-template-columns: 1fr; }
+    #{{ section_id }} .editorial-showcase__video-panel { min-height: var(--showcase-mobile-height); }
+    #{{ section_id }} .editorial-showcase__product-panel { padding: 48px 24px; }
+    #{{ section_id }} .editorial-showcase__card { flex-basis: calc((100% - var(--showcase-gap)) / 2); }
+  }
+  @media screen and (max-width: 749px) {
+    #{{ section_id }} .editorial-showcase__video--desktop { display: none; }
+    #{{ section_id }} .editorial-showcase__video--mobile { display: block; }
+    #{{ section_id }} .editorial-showcase__media-copy { left: 24px; bottom: 24px; }
+    #{{ section_id }} .editorial-showcase__card { flex-basis: 100%; }
+  }
+</style>
+
+<script>
+  (() => {
+    const root = document.getElementById('{{ section_id }}');
+    if (!root) return;
+    const storageKey = 'editorial-showcase-wishlist';
+    const getWishlist = () => { try { return JSON.parse(localStorage.getItem(storageKey) || '[]'); } catch (error) { return []; } };
+    const setWishlist = (items) => { try { localStorage.setItem(storageKey, JSON.stringify(items)); } catch (error) {} };
+
+    root.querySelectorAll('[data-wishlist]').forEach((button) => {
+      const productId = button.dataset.productId;
+      button.setAttribute('aria-pressed', getWishlist().includes(productId) ? 'true' : 'false');
+      button.addEventListener('click', () => {
+        const items = getWishlist();
+        const index = items.indexOf(productId);
+        if (index === -1) items.push(productId); else items.splice(index, 1);
+        setWishlist(items);
+        const active = index === -1;
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    });
+
+    const setupCarousel = (panel) => {
+      const carousel = panel.querySelector('[data-carousel]');
+      if (!carousel) return;
+      const track = carousel.querySelector('[data-carousel-track]');
+      const slides = [...carousel.querySelectorAll('[data-carousel-slide]')];
+      const previous = carousel.querySelector('[data-carousel-previous]');
+      const next = carousel.querySelector('[data-carousel-next]');
+      let index = 0;
+      const visibleSlides = () => window.innerWidth < 750 ? 1 : window.innerWidth < 990 ? 2 : {{ section.settings.products_per_row }};
+      const maxIndex = () => Math.max(0, slides.length - visibleSlides());
+      const render = () => {
+        const gap = parseFloat(getComputedStyle(track).gap) || 0;
+        const width = slides[0] ? slides[0].getBoundingClientRect().width : 0;
+        track.style.transform = `translateX(-${index * (width + gap)}px)`;
+        if (previous) previous.style.display = index <= 0 ? 'none' : 'flex';
+        if (next) next.style.display = index >= maxIndex() ? 'none' : 'flex';
+      };
+      previous?.addEventListener('click', () => { index = Math.max(0, index - 1); render(); });
+      next?.addEventListener('click', () => { index = Math.min(maxIndex(), index + 1); render(); });
+      window.addEventListener('resize', () => { index = Math.min(index, maxIndex()); render(); });
+      render();
+    };
+    root.querySelectorAll('[data-panel]').forEach(setupCarousel);
+
+    const tabs = [...root.querySelectorAll('[role="tab"]')];
+    const activateTab = (tab) => {
+      tabs.forEach((item) => { const active = item === tab; item.classList.toggle('is-active', active); item.setAttribute('aria-selected', active ? 'true' : 'false'); });
+      root.querySelectorAll('[data-panel]').forEach((panel) => { const active = panel.dataset.panel === tab.dataset.tabTarget; panel.hidden = !active; panel.classList.toggle('is-active', active); });
+    };
+    tabs.forEach((tab) => tab.addEventListener('click', () => activateTab(tab)));
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Editorial split showcase",
+  "tag": "section",
+  "class": "section-editorial-split-showcase",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Eau de Parfum" },
+    { "type": "inline_richtext", "id": "heading", "label": "Heading", "default": "A scent—and story—for all" },
+    { "type": "richtext", "id": "description", "label": "Description" },
+    { "type": "header", "content": "Media editorial copy" },
+    { "type": "text", "id": "media_eyebrow", "label": "Media eyebrow", "default": "Fragrance" },
+    { "type": "inline_richtext", "id": "media_heading", "label": "Media heading", "default": "Scents for the nose, stories for the mind" },
+    { "type": "richtext", "id": "media_description", "label": "Media description", "default": "<p>Each fragrance a table. Each table a question. Each question an invitation to pause and ponder.</p>" },
+    { "type": "text", "id": "media_button_text", "label": "Media button text", "default": "Explore" },
+    { "type": "url", "id": "media_button_link", "label": "Media button link" },
+    { "type": "video", "id": "desktop_video", "label": "Desktop video" },
+    { "type": "video", "id": "mobile_video", "label": "Mobile video" },
+    { "type": "image_picker", "id": "fallback_image", "label": "Fallback image" },
+    { "type": "url", "id": "video_link", "label": "Video link" },
+    { "type": "checkbox", "id": "video_autoplay", "label": "Autoplay video", "default": true },
+    { "type": "checkbox", "id": "video_loop", "label": "Loop video", "default": true },
+    { "type": "checkbox", "id": "show_video_controls", "label": "Show video controls", "default": false },
+    { "type": "select", "id": "video_position", "label": "Video position", "default": "center center", "options": [ { "value": "left center", "label": "Left" }, { "value": "center center", "label": "Center" }, { "value": "right center", "label": "Right" } ] },
+    { "type": "range", "id": "video_overlay", "label": "Video overlay", "min": 0, "max": 80, "step": 5, "unit": "%", "default": 20 },
+    { "type": "range", "id": "desktop_layout_width", "label": "Desktop video width", "min": 35, "max": 65, "step": 1, "unit": "%", "default": 50 },
+    { "type": "range", "id": "section_height", "label": "Section height", "min": 500, "max": 1000, "step": 10, "unit": "px", "default": 720 },
+    { "type": "range", "id": "mobile_height", "label": "Mobile video height", "min": 300, "max": 800, "step": 10, "unit": "px", "default": 480 },
+    { "type": "range", "id": "product_card_count", "label": "Product card count", "min": 1, "max": 12, "step": 1, "default": 6 },
+    { "type": "select", "id": "products_per_row", "label": "Products per row", "default": "3", "options": [ { "value": "2", "label": "2" }, { "value": "3", "label": "3" }, { "value": "4", "label": "4" } ] },
+    { "type": "checkbox", "id": "show_product_description", "label": "Show key notes (description)", "default": true },
+    { "type": "checkbox", "id": "show_price", "label": "Show price", "default": true },
+    { "type": "checkbox", "id": "show_wishlist", "label": "Show wishlist heart", "default": true },
+    { "type": "checkbox", "id": "show_carousel_arrows", "label": "Show carousel arrows", "default": true },
+    { "type": "select", "id": "heading_size", "label": "Heading size", "default": "medium", "options": [ { "value": "small", "label": "Small" }, { "value": "medium", "label": "Medium" }, { "value": "large", "label": "Large" } ] },
+    { "type": "color", "id": "background_color", "label": "Background color", "default": "#FBF9F5" },
+    { "type": "color", "id": "text_color", "label": "Text color", "default": "#23201D" },
+    { "type": "range", "id": "product_spacing", "label": "Product spacing", "min": 8, "max": 40, "step": 1, "unit": "px", "default": 24 },
+    { "type": "range", "id": "tab_spacing", "label": "Tab spacing", "min": 12, "max": 48, "step": 1, "unit": "px", "default": 24 }
+  ],
+  "blocks": [
+    {
+      "type": "category_tab",
+      "name": "Category tab",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Tab title", "default": "Fresh" },
+        { "type": "collection", "id": "collection", "label": "Collection" },
+        { "type": "product_list", "id": "products", "label": "Custom product selection", "limit": 12 },
+        { "type": "checkbox", "id": "visible", "label": "Tab visible", "default": true }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Editorial split showcase",
+      "blocks": [
+        { "type": "category_tab", "settings": { "title": "Fresh" } },
+        { "type": "category_tab", "settings": { "title": "Floral" } },
+        { "type": "category_tab", "settings": { "title": "Woody" } },
+        { "type": "category_tab", "settings": { "title": "Ambery" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

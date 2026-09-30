@@ -1,0 +1,448 @@
+{% liquid
+  assign cart_drawer_id = 'aesop-cart-drawer'
+%}
+<style>
+  /* --- CART DRAWER STYLES --- */
+  .aesop-cart-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .aesop-cart-drawer.is-open {
+    display: block;
+  }
+
+  .aesop-cart-drawer__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(1px);
+  }
+
+  .aesop-cart-drawer__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 440px;
+    background: #FBFBF9;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 30px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .aesop-cart-drawer.is-open .aesop-cart-drawer__panel {
+    transform: translateX(0);
+  }
+
+  /* Header */
+  .aesop-cart-drawer__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid #E5E3DC;
+  }
+
+  .aesop-cart-drawer__title {
+    font-family: "Zapf Humanist", "Optima", "Georgia", serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin: 0;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__close {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #333;
+    padding: 4px;
+    transition: opacity 0.2s;
+  }
+  .aesop-cart-drawer__close:hover { opacity: 0.6; }
+
+  /* Body */
+  .aesop-cart-drawer__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  /* Empty State */
+  .aesop-cart-drawer__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .aesop-cart-drawer__empty-text {
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #333;
+    margin: 0 0 24px 0;
+  }
+
+  .aesop-cart-drawer__empty-btn {
+    display: block;
+    width: 100%;
+    background: #4A4A4A;
+    color: #fff;
+    text-decoration: none;
+    padding: 16px;
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: opacity 0.2s;
+  }
+  .aesop-cart-drawer__empty-btn:hover { opacity: 0.85; }
+
+  /* Items */
+  .aesop-cart-drawer__items {
+    flex: 1;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .aesop-cart-drawer__item {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: #F3F2EC;
+    position: relative;
+  }
+
+  .aesop-cart-drawer__item-image {
+    width: 80px;
+    flex-shrink: 0;
+  }
+  .aesop-cart-drawer__item-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+
+  .aesop-cart-drawer__item-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aesop-cart-drawer__item-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    text-decoration: none;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .aesop-cart-drawer__item-variant {
+    font-size: 13px;
+    color: #555;
+    margin: 0 0 12px 0;
+  }
+
+  .aesop-cart-drawer__item-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+
+  .aesop-cart-drawer__qty {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+
+  .aesop-cart-drawer__qty-btn {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 36px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .aesop-cart-drawer__qty-btn:hover { background: #f0f0f0; }
+
+  .aesop-cart-drawer__qty-input {
+    width: 36px;
+    height: 36px;
+    text-align: center;
+    border: none;
+    font-size: 14px;
+    background: transparent;
+    color: #222;
+    -moz-appearance: textfield;
+  }
+  .aesop-cart-drawer__qty-input::-webkit-outer-spin-button,
+  .aesop-cart-drawer__qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .aesop-cart-drawer__item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  /* Samples */
+  .aesop-cart-drawer__samples {
+    border-top: 1px solid #E5E3DC;
+    border-bottom: 1px solid #E5E3DC;
+  }
+
+  .aesop-cart-drawer__samples-toggle {
+    width: 100%;
+    background: #F3F2EC;
+    border: none;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
+  }
+  .aesop-cart-drawer__samples-toggle:hover { background: #ECEAE2; }
+
+  .aesop-cart-drawer__samples-title {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 4px;
+  }
+
+  .aesop-cart-drawer__samples-sub {
+    display: block;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .aesop-cart-drawer__samples-content {
+    padding: 16px 24px;
+    background: #FBFBF9;
+  }
+  .aesop-cart-drawer__samples-empty {
+    font-size: 13px;
+    color: #777;
+    margin: 0;
+  }
+
+  /* Footer */
+  .aesop-cart-drawer__footer {
+    padding: 20px 24px 24px;
+    background: #FBFBF9;
+    border-top: 1px solid #E5E3DC;
+  }
+
+  .aesop-cart-drawer__subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .aesop-cart-drawer__subtotal-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__subtotal-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .aesop-cart-drawer__tax-note {
+    font-size: 12px;
+    color: #555;
+    margin: 0 0 20px 0;
+    line-height: 1.4;
+  }
+  .aesop-cart-drawer__tax-note a {
+    color: #222;
+    text-decoration: underline;
+  }
+
+  .aesop-cart-drawer__btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .aesop-cart-drawer__btn--primary {
+    background: #4A4A4A;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .aesop-cart-drawer__btn--primary:hover { opacity: 0.85; }
+
+  .aesop-cart-drawer__btn--secondary {
+    background: #fff;
+    color: #222;
+    border: 1px solid #ccc;
+  }
+  .aesop-cart-drawer__btn--secondary:hover { background: #F3F2EC; }
+
+  .aesop-cart-drawer__checkout-form {
+    margin: 0;
+  }
+
+  /* Mobile */
+  @media (max-width: 500px) {
+    .aesop-cart-drawer__panel {
+      max-width: 100%;
+    }
+    .aesop-cart-drawer__head,
+    .aesop-cart-drawer__items,
+    .aesop-cart-drawer__footer {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+    .aesop-cart-drawer__samples-toggle {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+  }
+</style>
+<div id="{{ cart_drawer_id }}" class="aesop-cart-drawer" data-cart-drawer aria-hidden="true">
+  <div class="aesop-cart-drawer__overlay" data-cart-close></div>
+  
+  <div class="aesop-cart-drawer__panel" role="dialog" aria-modal="true" aria-label="Shopping cart">
+    
+    <!-- Header -->
+    <div class="aesop-cart-drawer__head">
+      <h2 class="aesop-cart-drawer__title">
+        My cart <span data-cart-drawer-count>{% if cart.item_count > 0 %}({{ cart.item_count }}){% endif %}</span>
+      </h2>
+      <button type="button" class="aesop-cart-drawer__close" data-cart-close aria-label="Close cart">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <line x1="5" y1="5" x2="19" y2="19"></line>
+          <line x1="19" y1="5" x2="5" y2="19"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="aesop-cart-drawer__body" data-cart-body>
+      {% if cart.item_count == 0 %}
+        <!-- Empty State -->
+        <div class="aesop-cart-drawer__empty">
+          <p class="aesop-cart-drawer__empty-text">You have no items in your cart</p>
+          <a href="{{ routes.all_products_collection_url }}" class="aesop-cart-drawer__empty-btn">Continue shopping</a>
+        </div>
+      {% else %}
+        <!-- Cart Items -->
+        <div class="aesop-cart-drawer__items">
+          {% for item in cart.items %}
+            <div class="aesop-cart-drawer__item" data-cart-item="{{ item.key }}">
+              
+              <div class="aesop-cart-drawer__item-image">
+                <a href="{{ item.url }}">
+                  <img src="{{ item.image | image_url: width: 150 }}" alt="{{ item.title | escape }}" loading="lazy">
+                </a>
+              </div>
+
+              <div class="aesop-cart-drawer__item-details">
+                <a href="{{ item.url }}" class="aesop-cart-drawer__item-title">{{ item.product.title }}</a>
+                
+                {%- if item.product.has_only_default_variant == false -%}
+                  <p class="aesop-cart-drawer__item-variant">
+                    Size: {{ item.variant.title }}
+                  </p>
+                {%- endif -%}
+
+                <div class="aesop-cart-drawer__item-bottom">
+                  <div class="aesop-cart-drawer__qty" data-cart-qty>
+                    <button type="button" class="aesop-cart-drawer__qty-btn" data-cart-qty-minus data-key="{{ item.key }}" aria-label="Decrease quantity">−</button>
+                    <input type="number" class="aesop-cart-drawer__qty-input" value="{{ item.quantity }}" min="0" data-cart-qty-input data-key="{{ item.key }}" readonly>
+                    <button type="button" class="aesop-cart-drawer__qty-btn" data-cart-qty-plus data-key="{{ item.key }}" aria-label="Increase quantity">+</button>
+                  </div>
+
+                  <div class="aesop-cart-drawer__item-price">
+                    {{ item.final_line_price | money }}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Samples / Add-ons -->
+        <div class="aesop-cart-drawer__samples" data-cart-samples>
+          <button type="button" class="aesop-cart-drawer__samples-toggle" data-samples-toggle>
+            <div>
+              <span class="aesop-cart-drawer__samples-title">Add your free Samples</span>
+              <span class="aesop-cart-drawer__samples-sub">You have 0 / 3 samples selected</span>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div class="aesop-cart-drawer__samples-content" data-samples-content hidden>
+            <p class="aesop-cart-drawer__samples-empty">No samples available at this moment.</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="aesop-cart-drawer__footer">
+          
+          <div class="aesop-cart-drawer__subtotal">
+            <span class="aesop-cart-drawer__subtotal-label">Subtotal</span>
+            <span class="aesop-cart-drawer__subtotal-value" data-cart-subtotal>{{ cart.total_price | money }}</span>
+          </div>
+          
+          <p class="aesop-cart-drawer__tax-note">
+            Taxes included. Complimentary <a href="/policies/shipping-policy">Shipping</a> on all orders
+          </p>
+
+          <a href="{{ routes.cart_url }}" class="aesop-cart-drawer__btn aesop-cart-drawer__btn--primary">
+            Go to cart
+          </a>
+          
+          <form action="{{ routes.cart_url }}" method="post" novalidate class="aesop-cart-drawer__checkout-form">
+            <button type="submit" name="checkout" class="aesop-cart-drawer__btn aesop-cart-drawer__btn--secondary">
+              Check out
+            </button>
+          </form>
+
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+

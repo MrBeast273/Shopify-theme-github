@@ -1,0 +1,348 @@
+{% liquid
+  assign section_id = 'aesop-split-' | append: section.id
+  assign layout_class = 'layout-' | append: section.settings.layout_order
+  assign align_class = 'align-' | append: section.settings.text_alignment
+%}
+
+<section id="{{ section_id }}" class="aesop-split-section {{ layout_class }} {{ align_class }}" style="--aesop-bg: {{ section.settings.background_color }}; --aesop-text: {{ section.settings.text_color }}; --aesop-height: {{ section.settings.section_height }}px;">
+  <div class="aesop-split-section__container">
+    
+    <div class="aesop-split-section__content">
+      <div class="aesop-split-section__inner">
+        {% if section.settings.eyebrow != blank %}
+          <p class="aesop-split-section__eyebrow">{{ section.settings.eyebrow }}</p>
+        {% endif %}
+        
+        {% if section.settings.heading != blank %}
+          <h2 class="aesop-split-section__heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+        
+        {% if section.settings.description != blank %}
+          <div class="aesop-split-section__description">
+            {{ section.settings.description }}
+          </div>
+        {% endif %}
+
+        {% if section.settings.button_text != blank %}
+          <a href="{% if section.settings.button_link != blank %}{{ section.settings.button_link }}{% else %}#{% endif %}" class="aesop-split-section__button">
+            <span>{{ section.settings.button_text }}</span>
+            <span class="aesop-split-section__arrow" aria-hidden="true">&rarr;</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="aesop-split-section__media">
+      {% if section.settings.video != blank %}
+        {{ section.settings.video | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true, class: 'aesop-split-section__video' }}
+      {% elsif section.settings.image != blank %}
+        {{ section.settings.image | image_url: width: 1800 | image_tag: class: 'aesop-split-section__image', loading: 'lazy', widths: '600, 900, 1200, 1600, 1800', alt: section.settings.image.alt | default: section.settings.heading | escape }}
+      {% else %}
+        <div class="aesop-split-section__placeholder">
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'aesop-split-section__svg' }}
+        </div>
+      {% endif %}
+    </div>
+    
+  </div>
+</section>
+
+<style>
+  #{{ section_id }} {
+    background-color: var(--aesop-bg);
+    color: var(--aesop-text);
+    width: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin-top: 50px; 
+    margin-bottom: 50px;
+  }
+
+  #{{ section_id }} * {
+    box-sizing: border-box;
+  }
+
+  #{{ section_id }} .aesop-split-section__container {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    min-height: var(--aesop-height);
+    width: 100%;
+  }
+
+  #{{ section_id }}.layout-image-right .aesop-split-section__content { order: 1; }
+  #{{ section_id }}.layout-image-right .aesop-split-section__media { order: 2; }
+
+  #{{ section_id }}.layout-image-left .aesop-split-section__content { order: 2; }
+  #{{ section_id }}.layout-image-left .aesop-split-section__media { order: 1; }
+
+  #{{ section_id }} .aesop-split-section__content {
+    display: flex;
+    align-items: center;
+    padding: 80px 60px 80px 80px;
+    background-color: var(--aesop-bg);
+  }
+
+  #{{ section_id }}.align-left .aesop-split-section__content { justify-content: flex-start; text-align: left; }
+  #{{ section_id }}.align-center .aesop-split-section__content { justify-content: center; text-align: center; }
+  #{{ section_id }}.align-right .aesop-split-section__content { justify-content: flex-end; text-align: right; }
+
+  #{{ section_id }}.layout-image-left .aesop-split-section__content { padding: 80px 80px 80px 60px; }
+  
+  #{{ section_id }} .aesop-split-section__inner {
+    max-width: 440px;
+    width: 100%;
+  }
+
+  #{{ section_id }} .aesop-split-section__eyebrow {
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    margin: 0 0 20px 0;
+    color: var(--aesop-text);
+    opacity: 0.85;
+    font-weight: 400;
+  }
+
+  #{{ section_id }} .aesop-split-section__heading {
+    font-family: "Zapf Humanist", "Optima", "Georgia", "Times New Roman", serif;
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    margin: 0 0 24px 0;
+    color: var(--aesop-text);
+  }
+
+  #{{ section_id }} .aesop-split-section__description {
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 36px;
+    color: var(--aesop-text);
+    opacity: 0.85;
+    font-weight: 300;
+  }
+
+  #{{ section_id }} .aesop-split-section__description p {
+    margin: 0;
+  }
+
+  #{{ section_id }} .aesop-split-section__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 140px;
+    height: 46px;
+    padding: 0 20px;
+    border: 1px solid rgba(35, 32, 29, 0.3);
+    background: transparent;
+    color: var(--aesop-text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.25s ease;
+  }
+
+  #{{ section_id }} .aesop-split-section__button:hover {
+    border-color: var(--aesop-text);
+    background-color: var(--aesop-text);
+    color: var(--aesop-bg);
+  }
+
+  #{{ section_id }} .aesop-split-section__arrow {
+    font-size: 15px;
+    margin-left: 16px;
+    transition: transform 0.25s ease;
+  }
+
+  #{{ section_id }} .aesop-split-section__button:hover .aesop-split-section__arrow {
+    transform: translateX(4px);
+  }
+
+  #{{ section_id }} .aesop-split-section__media {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 450px;
+    background-color: #221e1a;
+  }
+
+  #{{ section_id }} .aesop-split-section__image,
+  #{{ section_id }} .aesop-split-section__video,
+  #{{ section_id }} .aesop-split-section__placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    position: absolute;
+    inset: 0;
+  }
+
+  #{{ section_id }} .aesop-split-section__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8e5dc;
+  }
+
+  #{{ section_id }} .aesop-split-section__svg {
+    width: 50%;
+    height: 50%;
+    opacity: 0.4;
+  }
+
+  @media screen and (max-width: 989px) {
+    #{{ section_id }} .aesop-split-section__container {
+      grid-template-columns: 1fr;
+    }
+
+    #{{ section_id }}.layout-image-right .aesop-split-section__content,
+    #{{ section_id }}.layout-image-left .aesop-split-section__content { order: 1; }
+    
+    #{{ section_id }}.layout-image-right .aesop-split-section__media,
+    #{{ section_id }}.layout-image-left .aesop-split-section__media { order: 2; }
+
+    #{{ section_id }} .aesop-split-section__content {
+      padding: 60px 32px;
+    }
+    
+    #{{ section_id }}.layout-image-left .aesop-split-section__content { padding: 60px 32px; }
+
+    #{{ section_id }} .aesop-split-section__media {
+      height: 450px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    #{{ section_id }} .aesop-split-section__content {
+      padding: 40px 20px;
+    }
+
+    #{{ section_id }} .aesop-split-section__heading {
+      font-size: 26px;
+    }
+
+    #{{ section_id }} .aesop-split-section__media {
+      height: 350px;
+    }
+    
+    #{{ section_id }}.align-center .aesop-split-section__content,
+    #{{ section_id }}.align-right .aesop-split-section__content {
+      text-align: left;
+      justify-content: flex-start;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Aesop Split Banner",
+  "tag": "section",
+  "class": "section-aesop-split-banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "select",
+      "id": "layout_order",
+      "label": "Image Position",
+      "options": [
+        { "value": "image-right", "label": "Image on Right, Text on Left" },
+        { "value": "image-left", "label": "Image on Left, Text on Right" }
+      ],
+      "default": "image-right"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow Text",
+      "default": "The Fragrant Fables"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Provoking thoughts, stirring emotions"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Our Eaux de Parfum combine radically unfiltered ingredients and complex accords to pose questions via scent.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Label",
+      "default": "Discover"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "header",
+      "content": "Media"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Right Side Image"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Right Side Video (Optional)"
+    },
+    {
+      "type": "header",
+      "content": "Colors & Spacing"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#F6F5EF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#23201D"
+    },
+    {
+      "type": "range",
+      "id": "section_height",
+      "label": "Section Min Height (Desktop)",
+      "min": 400,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "default": 560
+    }
+  ],
+  "presets": [
+    {
+      "name": "Aesop Split Banner"
+    }
+  ]
+}
+{% endschema %}
